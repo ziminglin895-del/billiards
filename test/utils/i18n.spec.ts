@@ -1,4 +1,4 @@
-// The locale is resolved once and memoised in module scope, so load a fresh
+﻿// The locale is resolved once and memoised in module scope, so load a fresh
 // copy after resetting the module.
 function loadI18n() {
   let mod: typeof import("../../src/utils/i18n")
@@ -49,7 +49,7 @@ describe("i18n", () => {
       expect(loadI18n().t("Hit")).toBe("击球")
       expect(loadI18n().t("Place\nBall")).toBe("摆球")
       expect(loadI18n().t("FOUL")).toBe("犯规")
-      expect(loadI18n().t("YOU WON")).toBe("胜利")
+      expect(loadI18n().t("YOU WON")).toBe("你赢了")
       expect(loadI18n().t("Race to: {score}", { score: 20 })).toBe(
         "先到 20 分"
       )
