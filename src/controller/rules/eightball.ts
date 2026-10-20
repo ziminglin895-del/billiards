@@ -1,4 +1,4 @@
-import { Vector3 } from "three"
+﻿import { Vector3 } from "three"
 import { Container } from "../../container/container"
 import { Ball } from "../../model/ball"
 import { Outcome, OutcomeType } from "../../model/outcome"
@@ -226,7 +226,7 @@ export class EightBall implements Rules {
     this.container.notify({
       type: "Foul",
       title: t("FOUL"),
-      subtext: reason,
+      subtext: t(reason),
       extra: t("Ball in hand"),
     })
     this.startTurn()
@@ -242,7 +242,7 @@ export class EightBall implements Rules {
       if (session.p1type !== 0 && hasGroupBalls) {
         return this.respotEightBallFoul()
       }
-      return this.handleGameEnd(false, "8-ball pocketed on foul")
+      return this.handleGameEnd(false, t("8-ball pocketed on foul"))
     }
 
     const startPos = cueball.onTable() ? cueball.pos.clone() : this.placeBall()
@@ -322,7 +322,7 @@ export class EightBall implements Rules {
     this.container.sendEvent(
       RerackEvent.fromJson({ balls: [eightBall.serialise()] })
     )
-    return this.handleFoul([], "8-ball pocketed early")
+    return this.handleFoul([], t("8-ball pocketed early"))
   }
 
   private handleMiss(): Controller {

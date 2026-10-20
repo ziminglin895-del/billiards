@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>玩法与操作</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo:wght@200;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Microsoft YaHei", "PingFang SC", Exo, sans-serif;
+        font-weight: 200;
+        background: #111;
+        color: white;
+        min-height: 100vh;
+        overflow: hidden auto;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 12px;
+      }
+
+      ::-webkit-scrollbar {
+        display: none;
+      }
+
+      html {
+        scrollbar-width: none;
+      }
+
+      .phone {
+        width: 100%;
+        max-width: 360px;
+        aspect-ratio: 16 / 9;
+        border: 2px solid #666;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        background: linear-gradient(
+          to bottom,
+          #1b2d44 0%,
+          #13212f 50%,
+          #1a1611 100%
+        );
+      }
+
+      .top,
+      .bottom {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+
+      .top {
+        top: 0;
+        height: 42%;
+      }
+
+      .bottom {
+        bottom: 0;
+        height: 42%;
+      }
+
+      .divider {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        border-top: 2px dashed rgb(255 255 255 / 25%);
+        transform: translateY(-50%);
+      }
+
+      .zoom {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        opacity: 0.9;
+      }
+
+      .zoom-arrow {
+        width: 2px;
+        height: 90px;
+        background: white;
+        border-radius: 999px;
+        position: relative;
+      }
+
+      .zoom-arrow::before,
+      .zoom-arrow::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        border-top: 3px solid white;
+        border-right: 3px solid white;
+      }
+
+      .zoom-arrow::before {
+        top: -2px;
+        transform: translateX(-50%) rotate(-45deg);
+      }
+
+      .zoom-arrow::after {
+        bottom: -2px;
+        transform: translateX(-50%) rotate(135deg);
+      }
+
+      .zoom-label {
+        font-size: 0.72rem;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        letter-spacing: 0.08em;
+        opacity: 0.7;
+      }
+
+      .balls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .ball {
+        width: 1px;
+        height: 1px;
+        border-radius: 50%;
+        background: white;
+        opacity: 0.9;
+      }
+
+      .arrow {
+        position: relative;
+        height: 2px;
+        background: white;
+        border-radius: 999px;
+      }
+
+      .arrow::before,
+      .arrow::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-top: 3px solid white;
+        border-right: 3px solid white;
+      }
+
+      .arrow::before {
+        left: -2px;
+        transform: translateY(-50%) rotate(-135deg);
+      }
+
+      .arrow::after {
+        right: -2px;
+        transform: translateY(-50%) rotate(45deg);
+      }
+
+      .fine {
+        width: 110px;
+      }
+
+      .coarse {
+        width: 240px;
+      }
+
+      .label {
+        margin-top: 8px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+
+      .sub {
+        margin-top: 4px;
+        font-size: 0.78rem;
+        opacity: 0.7;
+      }
+
+      .panel {
+        width: 100%;
+        max-width: 360px;
+        background: rgb(0 0 0 / 80%);
+        border: 1px solid rgb(255 255 255 / 10%);
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 16px rgb(0 0 0 / 30%);
+      }
+
+      .panel h2 {
+        margin: 0 0 6px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #ffd479;
+      }
+
+      .panel p,
+      .panel li {
+        margin: 4px 0;
+        font-size: 0.86rem;
+        line-height: 1.55;
+        color: #e8e8e8;
+      }
+
+      .panel ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .help-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 3px;
+        font-size: 0.9rem;
+        color: #eee;
+      }
+
+      .help-row:last-child {
+        margin-bottom: 0;
+      }
+
+      kbd {
+        background: #333;
+        color: #fff;
+        padding: 1px 8px;
+        border-radius: 6px;
+        font-family: Exo, monospace;
+        border-bottom: 2px solid #555;
+        font-size: 0.78rem;
+        min-width: 32px;
+        text-align: center;
+        display: inline-block;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="phone">
+        <div class="top">
+          <div class="balls">
+            <div class="ball"></div>
+            <div class="ball"></div>
+            <div class="ball"></div>
+          </div>
+          <div class="arrow fine"></div>
+          <div class="label">精细瞄准</div>
+          <div class="sub">靠上位置 = 微调</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="zoom">
+          <div class="zoom-arrow"></div>
+          <div class="zoom-label">缩放</div>
+        </div>
+
+        <div class="bottom">
+          <div class="balls">
+            <div class="ball"></div>
+            <div class="ball"></div>
+            <div class="ball"></div>
+            <div class="ball"></div>
+            <div class="ball"></div>
+          </div>
+          <div class="arrow coarse"></div>
+          <div class="label">快速瞄准</div>
+          <div class="sub">靠下位置 = 转动更快</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>鼠标推杆（推荐）</h2>
+        <p>
+          在台面上按住左键，<b>向下拉</b>把球杆抽回来，再<b>快速向前推</b>。
+          球杆回到原位时自动出杆，<b>推得越快，力度越大</b>。
+          推得太慢不会出杆，可以当作取消。
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>好友对战（异地联机）</h2>
+        <ol>
+          <li>点右上角 <b>联机</b>，再点 <b>创建房间</b>。</li>
+          <li>把邀请链接发给好友，对方打开链接就能进同一桌；也可以报 5 位房间号，让对方点“加入房间”输入。</li>
+          <li>两人都到齐后由房主开球。联机服务器是作者公开的，正常网络不用梯子；第一次连接可能要等几秒。</li>
+        </ol>
+        <p>邀请链接要用部署后的公网网页地址，局域网地址只能同一网络使用。</p>
+      </div>
+
+      <div class="panel">
+        <h2>手机 / 平板</h2>
+        <p>
+          在球台上<b>按住向下拉</b>，再<b>快速向前推</b>出杆，推得越快力度越大。
+          也可以拖右下角力度条微调。点右下角菜单可以看帮助；横屏也不会挡住球桌。
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>九球规则速查（默认模式）</h2>
+        <ul>
+          <li>总是先碰台面上<b>号码最小</b>的球。</li>
+          <li>打进任意一颗球，就可以继续击球。</li>
+          <li>没碰到球、先碰错球、白球落袋、碰球后没球碰库，都算犯规。</li>
+          <li>犯规后对手获得<b>自由球</b>，可以把白球摆到任意位置。</li>
+          <li>打进 <b>9 号球</b>直接获胜。</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>操作</h2>
+        <div class="help-row"><kbd>⇦ ⇨</kbd><span>瞄准</span></div>
+        <div class="help-row"><kbd>Ctrl + ⇦ ⇨</kbd><span>微调瞄准</span></div>
+        <div class="help-row">
+          <kbd>⇧ ⇩</kbd><span>高杆 / 低杆</span>
+        </div>
+        <div class="help-row"><kbd>Shift + ⇦ ⇨</kbd><span>左右塞</span></div>
+        <div class="help-row">
+          <kbd>空格</kbd><span>击球（按住蓄力）</span>
+        </div>
+        <div class="help-row"><kbd>🖱️ 滚轮</kbd><span>调力度</span></div>
+        <div class="help-row"><kbd>🖱️ 双击</kbd><span>击球</span></div>
+        <div class="help-row">
+          <kbd>🖱️ 拉杆</kbd><span>向下拉，再向前推</span>
+        </div>
+        <div class="help-row"><kbd>M</kbd><span>扎杆角度</span></div>
+        <div class="help-row"><kbd>O</kbd><span>切换视角</span></div>
+        <div class="help-row"><kbd>F</kbd><span>全屏</span></div>
+        <div class="help-row"><kbd>C</kbd><span>聊天</span></div>
+        <div class="help-row">
+          <kbd>🖱️ 右键拖动</kbd><span>画线</span>
+        </div>
+        <div class="help-row"><kbd>+ / -</kbd><span>镜头高度</span></div>
+        <div class="help-row"><kbd>H</kbd><span>帮助</span></div>
+        <div class="help-row"><kbd>L</kbd><span>无边框模式</span></div>
+      </div>
+    </main>
+  </body>
+</html>

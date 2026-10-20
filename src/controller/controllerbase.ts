@@ -7,6 +7,7 @@ import { ConcedeEvent } from "../events/concedeevent"
 import { Outcome } from "../model/outcome"
 import { Vector3 } from "three"
 import { Session } from "../network/client/session"
+import { t } from "../utils/i18n"
 
 const flipP1type = (t: number) => (t === 1 ? 2 : 1)
 
@@ -79,7 +80,7 @@ export abstract class ControllerBase extends Controller {
   }
 
   override handleConcede(_: ConcedeEvent): Controller {
-    return this.container.rules.handleGameEnd(true, "opponent conceded")
+    return this.container.rules.handleGameEnd(true, t("opponent conceded"))
   }
 
   hit() {

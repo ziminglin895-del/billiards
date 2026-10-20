@@ -1,4 +1,4 @@
-import { Vector3 } from "three"
+﻿import { Vector3 } from "three"
 import { Container } from "../../container/container"
 import { Aim } from "../../controller/aim"
 import { Controller } from "../../controller/controller"
@@ -102,7 +102,7 @@ export class NineBall implements Rules {
     this.container.notify({
       type: "Foul",
       title: t("FOUL"),
-      subtext: reason,
+      subtext: t(reason),
       extra: t("Ball in hand"),
     })
     this.startTurn()

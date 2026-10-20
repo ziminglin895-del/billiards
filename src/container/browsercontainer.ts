@@ -323,6 +323,9 @@ export class BrowserContainer {
         // until accepted so it cannot hang.
         await this.messageRelay.awaitBothJoined()
       }
+      if (typeof globalThis.dispatchEvent === "function") {
+        globalThis.dispatchEvent(new CustomEvent("billiards:bothjoined"))
+      }
       if (!this.first) {
         this.broadcast(new BeginEvent())
       }

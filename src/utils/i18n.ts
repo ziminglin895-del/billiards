@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Minimal i18n for player-facing strings.
  *
  * English is the key: `t("Hit")` returns "Hit" when no translation exists, so a
@@ -11,11 +11,11 @@
  * English. Set `document.documentElement.lang` on load so assistive technology
  * announces the strings with the correct voice.
  *
- * Chinese ships as a single `zh` dictionary in Traditional characters: every
+ * Chinese ships as a single `zh` dictionary in Simplified characters: every
  * `zh-*` tag (zh-CN, zh-TW, zh-HK, zh-Hans, zh-Hant) matches on the language
- * subtag alone, so Simplified-browser visitors read Traditional too rather than
- * falling back to English. `zh-Hant` is advertised to the document so the
- * browser resolves Han-unified glyphs to Traditional forms instead of guessing
+ * subtag alone, so Traditional-browser visitors read Simplified too rather than
+ * falling back to English. `zh-CN` is advertised to the document so the
+ * browser resolves Han-unified glyphs to Simplified forms instead of guessing
  * from the region.
  */
 
@@ -73,50 +73,52 @@ const translations: Record<Locale, Record<string, string>> = {
     "Break : {score}": "브레이크: {score}",
     "Open high break {score}": "하이브레이크 {score} 보기",
   },
-  // Traditional Chinese, in the vocabulary Taiwanese billiards players use:
-  // 母球 (cue ball), 自由球 (ball in hand), 出桿 (stroke), 單桿 (a break/run).
   zh: {
-    Hit: "擊球",
-    "Place\nBall": "放置\n母球",
-    "Back to Lobby": "返回大廳",
-    "Back to Arena": "返回球場",
-    "Uploading result…": "正在上傳結果…",
-    "New Game": "新對局",
-    Replay: "重播",
-    // 再戰 is the idiomatic challenge wording, and shorter than 再次對戰.
-    Rematch: "再戰",
+    Hit: "击球",
+    "Place\nBall": "摆球",
+    "Back to Lobby": "返回大厅",
+    "Back to Arena": "返回竞技场",
+    "Uploading result…": "正在上传结果…",
+    "New Game": "新游戏",
+    Replay: "回放",
+    Rematch: "再来一局",
     "Ball in hand": "自由球",
-    // Bot-mode info badge: the player breaks first.
-    "You first": "你先攻",
-    // Points-race length, in the "搶 N 分" (race to N) style.
-    "Race to: {score}": "搶 {score} 分",
-    FOUL: "犯規",
-    "YOU WON": "勝利",
-    "YOU LOST": "落敗",
-    "GAME OVER": "比賽結束",
-    // Conceding is 認輸 (admitting defeat); the confirmation button reuses it.
-    "Concede Game": "認輸",
-    "Replay Complete": "重播結束",
-    "Waiting for opponent to join": "等待對手加入",
-    Concede: "認輸",
-    "Play on": "繼續比賽",
-    // Three-cushion break prompt: stop and take the win, or carry the run on.
-    "Declare win": "宣告勝利",
-    "Continue break": "繼續出桿",
-    // Reveal (card game) game over.
-    "Update Deck": "更換牌組",
-    "Share replay link": "分享重播連結",
+    "You first": "你先开球",
+    "Race to: {score}": "先到 {score} 分",
+    FOUL: "犯规",
+    "YOU WON": "你赢了",
+    "YOU LOST": "你输了",
+    "GAME OVER": "本局结束",
+    "Concede Game": "认输",
+    "Replay Complete": "回放结束",
+    "Waiting for opponent to join": "等待对手加入",
+    Concede: "认输",
+    "Play on": "继续比赛",
+    "Declare win": "宣布胜利",
+    "Continue break": "继续连击",
+    "Update Deck": "更换牌组",
+    "Share replay link": "分享回放链接",
     share: "分享",
-    upload: "上傳",
-    // High-break banner: 單桿 is the carom/snooker term for a single run.
-    "Break : {score}": "單桿：{score}",
-    "Open high break {score}": "查看最高單桿 {score}",
+    upload: "上传",
+    "Break : {score}": "单杆：{score}",
+    "Open high break {score}": "查看最高单杆 {score}",
+    "Cue ball potted": "白球落袋",
+    "No ball hit": "没有碰到任何球",
+    "Wrong ball hit first": "先碰到了错误的球",
+    "No cushion after contact": "碰球后没有球碰库",
+    "Hitting the 8-ball first is a foul": "先碰 8 号球犯规",
+    "Wrong group hit first": "先碰错花色",
+    "Must hit 8-ball first": "必须先碰 8 号球",
+    "8-ball pocketed on foul": "犯规时打进 8 号球",
+    "8-ball pocketed early": "8 号球提前落袋",
+    "opponent conceded": "对手认输",
+    "You conceded": "你已认输",
   },
 }
 
 // Document language, when the locale code alone is too coarse for the browser
-// to pick the right script: `zh` is Traditional here, so advertise `zh-Hant`.
-const HTML_LANG: Partial<Record<Locale, string>> = { zh: "zh-Hant" }
+// to pick the right script: `zh` is Simplified here, so advertise `zh-CN`.
+const HTML_LANG: Partial<Record<Locale, string>> = { zh: "zh-CN" }
 
 function fromTag(tag: string | undefined | null): Locale | undefined {
   if (!tag) return undefined
@@ -144,7 +146,15 @@ export function currentLocale(): Locale | undefined {
     // An explicit ?locale= is authoritative: one we do not ship resolves to
     // English rather than silently falling back to the browser language, which
     // would make the result depend on the visitor's OS.
-    resolved = requested ? fromTag(requested) : fromBrowser()
+    // A page that pins its own language (e.g. zh.html) sets data-locale on the
+    // root element so it stays Chinese even on an English browser.
+    const pinned =
+      typeof document !== "undefined"
+        ? document.documentElement.dataset.locale
+        : undefined
+    resolved = requested
+      ? fromTag(requested)
+      : (fromTag(pinned) ?? fromBrowser())
   }
   return resolved
 }

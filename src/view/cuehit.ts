@@ -42,6 +42,13 @@ export class CueHit {
   private armed = false
   private state: "Idle" | "Pending" | "Pulling" | "Pushing" = "Idle"
   private pointerId: number | null = null
+  /** Press that has not yet been claimed: a downward drag anywhere on the
+   * table becomes a pull-back. Kept separate from `pointerId` so a click or a
+   * horizontal aim drag still reaches PointerTap and interactjs. */
+  private candidateId: number | null = null
+  private candidateX = 0
+  private candidateY = 0
+  private readonly dragAnywhere: boolean
   private startX = 0
   private startY = 0
   private lastY = 0
@@ -54,6 +61,12 @@ export class CueHit {
 
   constructor(container: Container) {
     this.container = container
+    // ?dragstroke=cue restores the old behaviour where only a press on the
+    // cue itself starts a pull-back.
+    this.dragAnywhere =
+      new URLSearchParams(
+        globalThis.location?.search ?? ""
+      ).get("dragstroke") !== "cue"
   }
 
   /** The cue-ball spin gesture this hit gesture delegates to when a press
@@ -140,6 +153,15 @@ export class CueHit {
     )
   }
 
+  private isInteractiveTarget(e: PointerEvent): boolean {
+    const el = e.target as Element | null
+    return !!el?.closest?.(
+      "button, a, input, textarea, select, dialog, #helpOverlay, " +
+        "#notificationOverlay, #menuItems, #panel, #lobbyContainer, " +
+        "#ballTray, #botDebugOverlay"
+    )
+  }
+
   private onPointerDown = (e: PointerEvent) => {
     if (!this.armed || this.active || !e.isPrimary || e.button !== 0) {
       return
@@ -158,6 +180,17 @@ export class CueHit {
       return
     }
     if (!this.hitCue(e)) {
+      // Anywhere-drag: remember the press without claiming it. Only a
+      // deliberate downward drag turns into a pull-back, so clicks (aim-adjust
+      // toggle) and horizontal drags (aim) still work as before.
+      if (
+        this.dragAnywhere &&
+        !this.isInteractiveTarget(e)
+      ) {
+        this.candidateId = e.pointerId
+        this.candidateX = e.clientX
+        this.candidateY = e.clientY
+      }
       return
     }
     // Take ownership of the press but stay Pending: capture, preventDefault
@@ -175,7 +208,70 @@ export class CueHit {
     this.backwardSamples = 0
   }
 
+  private claimCandidate(e: PointerEvent) {
+    this.pointerId = e.pointerId
+    this.state = "Pulling"
+    this.startX = this.candidateX
+    this.startY = this.candidateY
+    this.lastY = e.clientY
+    this.lastT = performance.now()
+    this.pullPx = e.clientY - this.startY
+    this.maxPullPx = this.pullPx
+    this.speedSamples = []
+    this.backwardSamples = 0
+    this.candidateId = null
+    this.capturePointer(e)
+  }
+
+  /** Track a press that did not land on the cue. Returns true once it has
+   * turned into a pull and the caller should run the shared move handling. */
+  private trackCandidate(e: PointerEvent): boolean {
+    if (e.pointerId !== this.candidateId) {
+      return false
+    }
+    const pull = e.clientY - this.candidateY
+    const dx = Math.abs(e.clientX - this.candidateX)
+    if (pull > CueHit.DEADZONE_PX && dx <= 2 * pull) {
+      this.claimCandidate(e)
+      return true
+    }
+    if (dx > CueHit.DEADZONE_PX || pull < -CueHit.DEADZONE_PX) {
+      this.candidateId = null
+    }
+    return false
+  }
+
+  private capturePointer(e: PointerEvent) {
+    e.preventDefault()
+    try {
+      ;(this.container.view.element as HTMLElement).setPointerCapture(e.pointerId)
+    } catch {
+      // Pointer capture may be unavailable (tests, detached canvas).
+    }
+  }
+
+  private handlePending(e: PointerEvent) {
+    const absDx = Math.abs(e.clientX - this.startX)
+    if (this.pullPx > CueHit.DEADZONE_PX) {
+      if (absDx > 2 * this.pullPx) {
+        this.reset()
+        this.pointerId = null
+        return
+      }
+      this.state = "Pulling"
+      this.capturePointer(e)
+      return
+    }
+    if (absDx > CueHit.DEADZONE_PX) {
+      this.reset()
+      this.pointerId = null
+    }
+  }
+
   private onPointerMove = (e: PointerEvent) => {
+    if (this.candidateId !== null && !this.trackCandidate(e)) {
+      return
+    }
     if (e.pointerId !== this.pointerId || this.state === "Idle") {
       return
     }
@@ -185,24 +281,7 @@ export class CueHit {
     this.pullPx = e.clientY - this.startY
 
     if (this.state === "Pending") {
-      const dx = e.clientX - this.startX
-      const absDx = Math.abs(dx)
-
-      if (this.pullPx > CueHit.DEADZONE_PX) {
-        if (absDx > 2 * this.pullPx) {
-          this.reset()
-          this.pointerId = null
-          return
-        }
-        this.state = "Pulling"
-        e.preventDefault()
-        ;(this.container.view.element as HTMLElement).setPointerCapture(
-          e.pointerId
-        )
-      } else if (absDx > CueHit.DEADZONE_PX) {
-        this.reset()
-        this.pointerId = null
-      }
+      this.handlePending(e)
       return
     }
 
@@ -218,6 +297,7 @@ export class CueHit {
 
     if (this.state === "Pushing") {
       this.updatePushingSpeed(dy, dt)
+      this.previewPower()
       if (this.pullPx <= 0) {
         this.lastY = e.clientY
         this.lastT = now
@@ -245,7 +325,23 @@ export class CueHit {
     }
   }
 
+  /** Live power preview while the cue is being pushed, so the speed-to-power
+   * mapping is visible before the shot fires. Visual only: the real power is
+   * set by fire() when the cue reaches its rest position. */
+  private previewPower() {
+    const avg = this.finalHalfSpeed()
+    if (avg < CueHit.V_MIN) {
+      return
+    }
+    const ratio = Math.min(1, Math.max(CueHit.MIN_POWER, avg / CueHit.V_FULL))
+    this.container.table.cue.aimInputs?.updatePowerSlider(ratio)
+  }
+
   private onPointerUp = (e: PointerEvent) => {
+    if (this.candidateId !== null && e.pointerId === this.candidateId) {
+      this.candidateId = null
+      return
+    }
     if (e.pointerId !== this.pointerId) {
       return
     }
@@ -255,6 +351,10 @@ export class CueHit {
   }
 
   private onPointerCancel = (e: PointerEvent) => {
+    if (this.candidateId !== null && e.pointerId === this.candidateId) {
+      this.candidateId = null
+      return
+    }
     if (e.pointerId !== this.pointerId) {
       return
     }
@@ -308,11 +408,14 @@ export class CueHit {
 
   private reset() {
     this.state = "Idle"
+    this.candidateId = null
     this.pullPx = 0
     this.maxPullPx = 0
     this.speedSamples = []
     this.backwardSamples = 0
     this.container.table.cue.dragT = null
+    // Undo any live preview left by an abandoned push.
+    this.container.table.cue.updateAimInput()
   }
 
   /** Release the captured pointer and end ownership of the interaction. Only

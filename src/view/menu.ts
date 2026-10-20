@@ -4,7 +4,7 @@ import { getButton } from "../utils/dom"
 import { Session } from "../network/client/session"
 import { ConcedeEvent } from "../events/concedeevent"
 import { ExportUtils } from "../utils/export-utils"
-import { t } from "../utils/i18n"
+import { currentLocale, t } from "../utils/i18n"
 
 export class Menu {
   container: Container
@@ -139,11 +139,11 @@ export class Menu {
               // regardless of score (see MatchResultHelper.determineWinner).
               if (this.container.isSinglePlayer || Session.isBotMode()) {
                 this.container.updateController(
-                  this.container.rules.handleGameEnd(false, "You conceded")
+                  this.container.rules.handleGameEnd(false, t("You conceded"))
                 )
               } else {
                 this.container.updateController(
-                  this.container.rules.handleGameEnd(false, "You conceded")
+                  this.container.rules.handleGameEnd(false, t("You conceded"))
                 )
                 this.container.sendEvent(new ConcedeEvent())
               }
@@ -243,7 +243,9 @@ export class Menu {
     if (overlay) {
       const isHidden = overlay.hasAttribute("hidden")
       if (isHidden) {
-        this.showOverlay("help.html")
+        this.showOverlay(
+          currentLocale() === "zh" ? "help-zh.html" : "help.html"
+        )
       } else {
         overlay.setAttribute("hidden", "true")
       }

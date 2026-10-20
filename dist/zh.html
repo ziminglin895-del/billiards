@@ -1,0 +1,1380 @@
+﻿<!doctype html>
+<html lang="zh-CN" data-locale="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>3D 台球 · 中文版</title>
+    <style>
+      @font-face {
+        font-family: Exo;
+        font-style: normal;
+        font-weight: 200;
+        font-display: swap;
+        src: url("https://fonts.gstatic.com/s/exo/v25/4UaZrEtFpBI4f1ZSIK9d4LjJ4tM3CwM.ttf")
+          format("truetype");
+      }
+
+      @font-face {
+        font-family: Exo;
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url("https://fonts.gstatic.com/s/exo/v25/4UaZrEtFpBI4f1ZSIK9d4LjJ4o0wCwM.ttf")
+          format("truetype");
+      }
+
+      .about-more {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        pointer-events: none;
+      }
+
+      .about-more summary {
+        position: absolute;
+        left: 50%;
+        bottom: 1px;
+        padding: 1px 5px;
+        color: #b0b0b0;
+        font-size: 8px;
+        line-height: 1;
+        list-style: none;
+        cursor: pointer;
+        transform: translateX(-50%);
+        pointer-events: auto;
+      }
+
+      .about-more summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .about-more[open] summary {
+        inset: 0;
+        font-size: 0;
+        background: rgb(0 0 0 / 40%);
+        cursor: default;
+        transform: none;
+      }
+
+      body.chromeless .about-more {
+        display: none;
+      }
+
+      .about-more .about-panel {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: min(38rem, calc(100vw - 1rem));
+        max-height: min(72vh, 42rem);
+        overflow-y: auto;
+        scrollbar-width: none;
+
+        /* index.css sets `div { touch-action: none }` to keep table drags off
+           the page; without this the panel only wheels, never finger-scrolls. */
+        touch-action: pan-y;
+        padding: 10px 12px;
+        background: #000;
+        color: #e0e0e0;
+        font-family: var(--font-family-primary, sans-serif);
+        transform: translate(-50%, -50%);
+        pointer-events: auto;
+      }
+
+      .about-more .about-panel a {
+        color: #8ab6f8;
+      }
+
+      /* Chinese build: the upstream SEO panel stays out of the play UI. */
+      .about-more {
+        display: none;
+      }
+
+      #zhHint {
+        position: fixed;
+        left: 50%;
+        top: 10px;
+        z-index: 600;
+        box-sizing: border-box;
+        width: min(92vw, 640px);
+        padding: 8px 30px 8px 12px;
+        border-radius: 8px;
+        background: rgb(0 0 0 / 72%);
+        color: #f2f2f2;
+        font: 13px/1.6 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+        text-align: center;
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+
+      #zhHint b {
+        color: #ffd479;
+        font-weight: 600;
+      }
+
+      #zhCoach {
+        color: #ffd479;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      #zhHintClose {
+        position: absolute;
+        right: 4px;
+        top: 2px;
+        padding: 0 6px;
+        border: 0;
+        background: transparent;
+        color: #bbb;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      #roomModal {
+        position: fixed;
+        inset: 0;
+        z-index: 3500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgb(0 0 0 / 58%);
+        font: 14px/1.55 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        touch-action: pan-y;
+      }
+
+      #roomModal[hidden] {
+        display: none;
+      }
+
+      body.room-modal-open #zhHint,
+      body.room-modal-open #lobbyContainer {
+        visibility: hidden;
+      }
+
+      .room-card {
+        position: relative;
+        box-sizing: border-box;
+        width: min(92vw, 420px);
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        padding: 20px;
+        border: 1px solid rgb(255 255 255 / 12%);
+        border-radius: 14px;
+        background: #14161c;
+        color: #f2f2f2;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 55%);
+        touch-action: pan-y;
+      }
+
+      .room-card h2 {
+        margin: 0 0 14px;
+        font-size: 18px;
+      }
+
+      .room-close {
+        position: absolute;
+        right: 8px;
+        top: 6px;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        background: transparent;
+        color: #bbb;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .room-field {
+        display: block;
+        width: auto;
+        margin: 0 0 12px;
+        color: #cfcfcf;
+      }
+
+      .room-field input {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin-top: 6px;
+        padding: 10px 12px;
+        border: 1px solid #3a3f4b;
+        border-radius: 8px;
+        background: #0d0f14;
+        color: #fff;
+        font: inherit;
+        user-select: text;
+      }
+
+      .room-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .room-actions button,
+      #roomJoin {
+        flex: 1 1 140px;
+        min-height: 44px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 9px;
+        background: #2d7ef7;
+        color: #fff;
+        font: 600 14px/1 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        cursor: pointer;
+      }
+
+      .room-actions button.secondary,
+      #roomJoin {
+        background: #2a2e38;
+      }
+
+      #roomJoin {
+        width: 100%;
+        margin-top: 4px;
+      }
+
+      .room-note {
+        margin: 12px 0 0;
+        color: #9aa0aa;
+        font-size: 12px;
+      }
+
+      .room-status {
+        margin: 14px 0 0;
+        color: #ffd479;
+        font-weight: 600;
+      }
+
+      .room-status.ok {
+        color: #66e08a;
+      }
+
+      #roomCodeShow {
+        color: #ffd479;
+        font-size: 20px;
+        letter-spacing: 2px;
+      }
+
+      #lobbyOverlay::before {
+        content: "联机";
+        padding-right: 4px;
+        color: #9fd0ff;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      #roomLink {
+        font-size: 12px;
+      }
+
+      @media (max-width: 600px) {
+        #zhHint {
+          top: 58px;
+          width: calc(100vw - 24px);
+          font-size: 12px;
+        }
+
+        #lobbyOverlay {
+          min-height: 40px;
+          padding: 6px 10px;
+        }
+
+        .room-card {
+          padding: 16px;
+        }
+      }
+
+      @media (max-height: 500px) {
+        #zhHint {
+          top: 58px;
+          font-size: 12px;
+        }
+      }
+    </style>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta
+      name="description"
+      content="Play free online pool, billiards and snooker with realistic 3D physics. Try 8-ball, 9-ball, three-cushion carom and practice challenges in your browser. No download or account required."
+    />
+    <meta
+      name="keywords"
+      content="billiards, billiards simulator, online billiards, free billiards game, pool game, snooker game, 8-ball, 9-ball, three-cushion billiards, three cushion carom, carom billiards, 4-ball billiards, open source billiards, ビリヤード, ビリヤードゲーム, 無料ビリヤード, 3クッション, スリークッション, 9ボール, 당구, 무료 당구, 온라인 당구, 당구 게임, 3쿠션, 사구, 스누커, Bida 3 băng, bi-a 3 băng, Biliar 3 bandas, billar a tres bandas, billar de carambolas, jugar billar carambolas, billar online gratis, Üç bant bilardo, üç bant, driebanden, biljart, gratis biljart, biljart spel, Carom3D, ShootersPool"
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://billiards.tailuge.workers.dev/" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <meta
+      property="og:title"
+      content="Free Online Billiards, Pool &amp; Snooker Game"
+    />
+    <meta
+      property="og:description"
+      content="Play free online pool, billiards and snooker with realistic 3D physics. Try 8-ball, 9-ball, three-cushion carom and practice challenges in your browser. No download or account required."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://billiards.tailuge.workers.dev/" />
+    <meta
+      property="og:image"
+      content="https://tailuge.github.io/billiards/dist/images/billiards.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:video" content="https://youtu.be/bAeiRQcQuyg" />
+    <meta property="og:video:type" content="text/html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="ocs-site-verification"
+      content="7e2c8724a132bd19fa2cac60ae730ba5"
+    />
+    <meta
+      name="twitter:title"
+      content="Free Online Billiards, Pool &amp; Snooker Game"
+    />
+    <meta
+      name="twitter:description"
+      content="Play free online pool, billiards and snooker with realistic 3D physics. Try 8-ball, 9-ball, three-cushion carom and practice challenges in your browser. No download or account required."
+    />
+    <meta
+      name="twitter:image"
+      content="https://billiards.tailuge.workers.dev/images/billiards.png"
+    />
+    <meta name="foundplay-verify" content="foundplay-verify-c4b4d827e235e075" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Free Online Billiards, Pool and Snooker",
+        "url": "https://billiards.tailuge.workers.dev/",
+        "image": "https://tailuge.github.io/billiards/dist/images/billiards.png",
+        "description": "Play free online pool, billiards and snooker with realistic 3D physics. Try 8-ball, 9-ball, three-cushion carom and practice challenges in your browser.",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Break Builder",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://tailuge.github.io/billiards/dist/favicon.png"
+          }
+        },
+        "creator": {
+          "@type": "Person",
+          "name": "tailuge"
+        },
+        "subjectOf": {
+          "@type": "VideoObject",
+          "name": "Billiards Pool Game Gameplay",
+          "description": "Realistic physics simulation and gameplay of Break Builder pool game.",
+          "thumbnailUrl": "https://tailuge.github.io/billiards/dist/images/billiards.png",
+          "contentUrl": "https://youtu.be/bAeiRQcQuyg",
+          "embedUrl": "https://www.youtube.com/embed/bAeiRQcQuyg",
+          "uploadDate": "2026-04-30T00:00:00+00:00"
+        }
+      }
+    </script>
+    <link rel="stylesheet" type="text/css" href="css/fonts.css" />
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <link rel="stylesheet" type="text/css" href="css/aiminputs.css" />
+    <link rel="stylesheet" type="text/css" href="css/powerinput.css" />
+    <link rel="stylesheet" type="text/css" href="css/notification.css" />
+    <link rel="stylesheet" type="text/css" href="css/tray.css" />
+    <link rel="stylesheet" type="text/css" href="css/chat.css" />
+    <link rel="stylesheet" type="text/css" href="css/lobby.css" />
+    <link rel="stylesheet" type="text/css" href="css/menu.css" />
+    <link rel="stylesheet" type="text/css" href="css/wood.css" />
+  </head>
+
+  <body>
+    <div id="zhHint">
+      <div id="zhCoach">第一步：点击下方「摆球」放下白球</div>
+      <div id="zhHowto">
+        鼠标：<b>左右拖动</b>瞄准 · <b>向下拉杆，再快速向前推</b>击球，推得越快力度越大 ·
+        按 <b>H</b> 看帮助
+      </div>
+      <button id="zhHintClose" type="button" aria-label="关闭提示">×</button>
+    </div>
+    <details class="about-more" id="about-more">
+      <summary>About</summary>
+      <div class="about-panel">
+        <h1>Free Online Pool, Snooker &amp; Billiards Game</h1>
+        <p>
+          Play free online pool, snooker and carom billiards with Tailuge
+          Billiards, an open-source 3D cue sports simulator. Play 8-ball,
+          9-ball, snooker and three-cushion billiards directly in your browser
+          on desktop or mobile. No download, installation or account required.
+          Practise shots, challenge other players or explore realistic ball
+          motion, spin and cushion rebounds.
+        </p>
+        <p>
+          The game uses a physics engine based on published research into
+          billiard-ball motion, collisions and cushion impacts. Adjust your aim,
+          spin and shot power, experiment with different positions, and study
+          how the cue ball moves around the table.
+        </p>
+
+        <h2>Pool, Snooker and Carom Games</h2>
+        <ul>
+          <li>
+            <a href="eightball.html">8-ball pool</a> — play the classic
+            solids-and-stripes pool game with realistic ball physics and a
+            high-resolution rendering mode.
+          </li>
+          <li>
+            <a href="nineball.html">9-ball pool</a> — play the fast-paced
+            rotation game, practise custom table layouts, and share replay links
+            to review interesting shots.
+          </li>
+          <li>
+            <a href="snooker.html">Snooker</a> — play snooker on a full-size
+            12-foot table with 15 reds, or practise on a smaller 6-foot table.
+            Practise potting, cue-ball positioning and break-building.
+          </li>
+          <li>
+            <a href="index.html?ruletype=threecushion&amp;lod=4"
+              >Three-cushion billiards</a
+            >
+            — play 3-cushion carom, where the cue ball must contact both object
+            balls, reaching at least three cushions before contacting the second
+            object ball. Explore spin, rebound angles and cue-ball paths with a
+            physics model developed for realistic cushion behaviour.
+          </li>
+          <li>
+            <a href="index.html?ruletype=sagu">Sagu (Korean four-ball)</a> —
+            play the Korean four-ball carom game on a standard or smaller 5-foot
+            table.
+          </li>
+        </ul>
+        <p>
+          Two practice bots, ClawBreak and TheFarJaw, play when nobody else is
+          around; the <a href="speedrun/index.html">speedrun challenge</a> races
+          you against the clock, and the
+          <a href="reveal/index.html">reveal game</a> uncovers pictures with
+          straight-pool potting.
+        </p>
+
+        <h2>Realistic billiards physics</h2>
+        <p>
+          This online billiards simulator models how balls roll, collide, spin
+          and rebound from the cushions. Its physics are based on published
+          research rather than purely visual approximations. Explore
+          ball-to-ball collisions, throw, spin and cushion rebounds, and see how
+          these effects change the path of a shot. Ball motion follows
+          <a
+            href="https://billiards.colostate.edu/physics_articles/Han_paper.pdf"
+            target="_blank"
+            rel="noopener"
+            >Han (2005)</a
+          >
+          with corrections noted by
+          <a
+            href="https://ekiefl.github.io/2020/04/24/pooltool-theory/#3-han-2005"
+            target="_blank"
+            rel="noopener"
+            >Kiefl</a
+          >; ball-to-ball collisions follow
+          <a
+            href="https://billiards.colostate.edu/technical_proofs/new/TP_A-14.pdf"
+            target="_blank"
+            rel="noopener"
+            >Alciatore</a
+          >, including the throw effect; and cushion impacts use
+          <a
+            href="https://billiards.colostate.edu/physics_articles/Mathavan_IMechE_2010.pdf"
+            target="_blank"
+            rel="noopener"
+            >Mathavan (2010)</a
+          >, with Stronge's compliant-cushion model available as an alternative.
+          Spin, throw and cushion rebound can all be inspected and re-tuned on
+          the <a href="diagrams/three.html">three-cushion physics page</a>.
+        </p>
+
+        <h2>Pool, Snooker and Billiards Practice</h2>
+        <ul>
+          <li>
+            <a href="practice.html">Billiards practice table</a> — set up custom
+            shots and ball positions, then repeat them to practise aim, spin and
+            cue-ball control without an opponent or a time limit.
+          </li>
+          <li>
+            <a href="exam/index.html">Billiards skill tests</a> — work through a
+            graded series of shots and receive an assessment level, completion
+            status and score.
+          </li>
+          <li>
+            <a href="exam/snooker.html">Snooker practice and assessment</a> —
+            work through a graded course of snooker shots, from basic pots to
+            difficult positions.
+          </li>
+          <li>
+            <a href="exam/threecushion.html"
+              >Three-cushion practice and assessment</a
+            >
+            — practise carom shots across a graded series, from basic positions
+            to advanced cushion routes.
+          </li>
+          <li>
+            <a href="fit/research.html">Shot sensitivity analysis</a> — see how
+            aim, spin, power and elevation change the result.
+          </li>
+          <li>
+            <a href="diagrams/diamond.html">The diamond system</a> for
+            three-cushion cue-ball paths.
+          </li>
+        </ul>
+
+        <h2>Online Multiplayer Pool and Billiards</h2>
+        <p>
+          Play online billiards against other players. The
+          <a href="lobby.html">multiplayer lobby</a> shows who is online and
+          lets you challenge available opponents. Use
+          <a href="2tab.html">two-tab mode</a> to play across two windows on one
+          device, or join <a href="arena.html">scheduled arenas</a> for timed
+          tournaments. High breaks appear on the
+          <a
+            href="https://scoreboard-tailuge.vercel.app/leaderboard"
+            target="_blank"
+            rel="noopener"
+            >leaderboard</a
+          >
+          and rated games contribute to your
+          <a
+            href="https://scoreboard-tailuge.vercel.app/elo"
+            target="_blank"
+            rel="noopener"
+            >Glicko-2 rating</a
+          >.
+        </p>
+
+        <h2>Guides and Billiards Research</h2>
+        <ul>
+          <li>
+            <a href="blog1.html">Why most pool games feel wrong</a> — what makes
+            a physics engine read as real, and where the cheap ones cheat.
+          </li>
+          <li>
+            <a href="blog2.html">Clearing the line-up</a> — a practice log on
+            running the balls, and how to drill it on the practice table.
+          </li>
+          <li>
+            <a href="blog3.html">Implementing Mathavan cushion physics</a> — the
+            maths behind the cushion model, written up in the open.
+          </li>
+        </ul>
+
+        <h2>Open-Source Billiards Simulator</h2>
+        <p>
+          Plain TypeScript with <a href="https://threejs.org/">three.js</a> for
+          rendering, open source under the GNU GPL. The code is on
+          <a
+            href="https://github.com/tailuge/billiards"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >, and contributions — bugs, physics tweaks, translations, new rule
+          sets — are welcome. Read more on the
+          <a href="about.html">about page</a>.
+        </p>
+
+        <h2>Play Billiards in Your Language</h2>
+        <ul>
+          <li>
+            <a href="./korean.html" lang="ko">무료 당구 게임 — 온라인 당구</a> —
+            3쿠션, 4구(사구), 포켓볼을 브라우저에서 무료로 즐기세요. 설치나
+            회원가입 없이 바로 플레이할 수 있습니다.
+            <a href="https://blog.naver.com/jasuil/224416229214"
+              >네이버 블로그</a
+            >, <a href="https://news11213.tistory.com/1">티스토리 블로그</a>.
+          </li>
+          <li>
+            <a href="./japanese.html" lang="ja"
+              >無料ビリヤードゲーム・オンラインビリヤード</a
+            >
+            —
+            ブラウザで無料のビリヤードゲームをプレイ。3クッション（スリークッション）や
+            9ボールなどを、ダウンロード・会員登録なしで楽しめます。
+            <a href="https://ameblo.jp/tailuge/entry-12981511558.html" lang="ja"
+              >日本でのビリヤードの思い出</a
+            >
+            もご覧ください。
+          </li>
+          <li>
+            <a href="./chinese.html" lang="zh">免費線上斯諾克</a> —
+            免安裝、免註冊，手機也能玩。
+          </li>
+          <li>
+            <a href="./turkish.html" lang="tr">Ücretsiz online bilardo</a> — 3
+            bant karambol, gerçekçi fizik, kayıt gerekmez.
+          </li>
+          <li>
+            <a href="./german.html" lang="de">Kostenloses 3-Band-Billard</a> —
+            ohne Download und Anmeldung im Browser.
+          </li>
+          <li>
+            <a href="./spanish.html" lang="es">Billar a tres bandas gratis</a>
+            — sin descargas ni registro, también en el móvil.
+          </li>
+          <li>
+            <a href="./dutch.html" lang="nl">Online driebanden spelen</a> —
+            gratis carambole in je browser.
+          </li>
+          <li>
+            <a href="./vietnamese.html" lang="vi">Game bi-a 3 băng</a> — miễn
+            phí, không cần cài đặt hay đăng ký.
+          </li>
+        </ul>
+        <h2>Mentions</h2>
+        <p>
+          <a href="https://pbc-molbergen.de/Simulator.html">Molbergen</a>,
+          <a href="https://www.bored.com/link/tailuge-github-io-billiards/"
+            >Bored</a
+          >,
+          <a
+            href="https://forums.azbilliards.com/threads/open-source-three-cushion-simulator.587516/"
+            >AZBilliards</a
+          >, <a href="https://tailuge.itch.io/">itch.io</a>,
+          <a
+            href="https://www.thesnookerforum.co.uk/board/forum/other-cuesports/billiards/1045334-3-cushion-billiards"
+            >SnookerForum</a
+          >,
+          <a href="https://gamejolt.com/games/billiards/1083832">GameJolt</a>,
+          <a href="https://billard-aktuell.de/forum/viewtopic.php?t=59609"
+            >Billard-aktuell</a
+          >, <a href="https://blog.naver.com/jasuil/224416229214">Naver</a>,
+          <a href="https://news11213.tistory.com/1">Tistory</a>,
+          <a href="https://ameblo.jp/tailuge/entry-12981511558.html">Ameblo</a>,
+          <a
+            href="https://www.reddit.com/r/billiards/comments/1upm8vu/speedrun/"
+            >r/billiards</a
+          >, <a href="https://github.com/fmhy/FMHY/wiki/Gaming">FMHY</a>,
+          <a href="https://www.appimagehub.com/p/2365428/">AppImageHub</a>,
+          <a href="https://webgames.me/play/billards-by-tailuge">WebGames</a>,
+          <a href="https://iogame.io/games/billards-by-tailuge">IOGame</a>,
+          <a
+            href="https://reporank.net/en/repo/tailuge-billiards.html#repo-feedback"
+            >RepoRank</a
+          >, <a href="https://indexpage.org/search?q=billiards">IndexPage</a>,
+          <a href="https://slowden.com/games/tailuge-billiards/">Slowden</a>,
+          <a href="https://foundplay.io/games/billiards?utm_source=creator"
+            >Foundplay</a
+          >
+        </p>
+      </div>
+    </details>
+
+    <main>
+      <div id="viewP1" class="view3d">
+        <div id="snookerScoreOverlay">
+          <div id="snookerScore" aria-live="polite">
+            <div id="breakScore" class="breakScore"></div>
+          </div>
+        </div>
+        <div id="notificationOverlay">
+          <div id="notification" aria-live="assertive" role="alert"></div>
+        </div>
+        <div id="helpOverlay" hidden>
+          <iframe title="Help"></iframe>
+          <div class="help-footer">
+            <button
+              class="lobby-btn"
+              type="button"
+              onclick="
+                document
+                  .getElementById('helpOverlay')
+                  .setAttribute('hidden', 'true')
+              "
+            >
+              关闭帮助
+            </button>
+            <span class="help-text">中文操作说明与规则速查</span>
+            <button id="helpClose" type="button">关闭</button>
+          </div>
+        </div>
+        <div id="botDebugOverlay">
+          <header>
+            <span id="botDebugToggle">🦞</span>
+            <div>
+              <button
+                id="botDebugClear"
+                type="button"
+                aria-label="Clear debug log"
+              >
+                Clear
+              </button>
+            </div>
+          </header>
+          <pre id="botDebugLog" aria-live="polite">
+          <img
+            src="images/billiards.png"
+            loading="lazy"
+            alt="Billiards Pool Game Promo - Realistic Physics Simulation"
+          />
+          Find it on <a href="https://github.com/tailuge/billiards">github</a>
+        </pre>
+        </div>
+        <div class="chatarea">
+          <div id="chatoutput" class="chatoutput"></div>
+        </div>
+        <dialog id="inputTextDiv" contenteditable="false">
+          <div id="inputTextDivInner">
+            <input
+              id="inputText"
+              type="text"
+              placeholder="输入聊天内容…"
+              maxlength="64"
+              autofocus
+              autocomplete="off"
+              aria-label="聊天输入"
+            />
+            <div
+              id="chatEmojiList"
+              role="group"
+              aria-label="表情消息"
+            ></div>
+            <button id="inputSend" type="button" aria-label="发送消息">
+              ➤
+            </button>
+            <button
+              id="toggleChatMode"
+              type="button"
+              aria-label="切换到表情"
+            >
+              <span class="chat-text-mode-icon">👾</span>
+              <span class="chat-emoji-mode-icon">⌨️</span>
+            </button>
+            <button id="inputClose" type="button" aria-label="关闭聊天">
+              ✖
+            </button>
+          </div>
+        </dialog>
+      </div>
+      <div id="panel" class="panel wood-texture">
+        <div class="aimControlColumn">
+          <div class="aimingArea">
+            <button
+              class="hitButton timeout-btn"
+              id="cueHit"
+              type="button"
+              aria-label="击球"
+            >
+              击球
+            </button>
+          </div>
+          <div id="tiltSliderContainer" class="tiltSliderContainer" hidden>
+            <angle-input
+              id="cueTilt"
+              role="slider"
+              aria-label="杆身角度"
+              aria-valuemin="0"
+              aria-valuemax="72"
+              aria-valuenow="0"
+            ></angle-input>
+          </div>
+          <template id="angle-input-template">
+            <div class="area" id="area">
+              <div class="ball"></div>
+              <div class="rotator" id="rot">
+                <div class="stick">
+                  <div class="tip"></div>
+                  <div class="ferrule"></div>
+                  <div class="shaft"></div>
+                  <div class="butt"></div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div id="ballContainerWrapper" class="ballContainerWrapper">
+            <button id="openElevation" type="button" class="openElevation">
+              +
+            </button>
+            <div id="ballContainer" class="ballContainer">
+              <div id="objectBall" class="objectBall"></div>
+              <div id="cueBall" class="cueBall">
+                <div id="cueTip" class="cueTip"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="powerSliderContainer" class="powerSliderContainer">
+          <div class="power-track"></div>
+          <input
+            class="powerSlider"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.65"
+            id="cuePower"
+            aria-label="力度"
+          />
+          <span id="powerPercent" class="powerPercent">65%</span>
+        </div>
+        <div class="outerMenu">
+          <details id="menuDropdown" class="menuDropdown">
+            <summary
+              class="menuButton half-height"
+              title="菜单"
+              id="menu"
+              aria-label="菜单"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000"
+                stroke-width="2"
+              >
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </summary>
+            <div id="menuItems" class="menuItems">
+              <button
+                class="menuButton half-height"
+                title="评论"
+                id="comment"
+                type="button"
+                aria-label="评论"
+                hidden
+              >
+                🗨
+              </button>
+              <button
+                class="menuButton half-height"
+                title="截图"
+                id="diagram"
+                type="button"
+                aria-label="截图"
+                hidden
+              >
+                📸
+              </button>
+              <button
+                class="menuButton half-height"
+                title="全屏"
+                id="fullscreen"
+                type="button"
+                aria-label="全屏"
+              >
+                ⛶
+              </button>
+              <button
+                class="menuButton half-height"
+                title="快进"
+                id="ffwd"
+                type="button"
+                aria-label="快进"
+                hidden
+              >
+                ⏩︎
+              </button>
+              <button
+                class="menuButton half-height"
+                title="分享"
+                id="share"
+                type="button"
+                aria-label="分享回放链接"
+                hidden
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+              </button>
+              <button
+                class="menuButton half-height"
+                title="认输"
+                id="concede"
+                type="button"
+                aria-label="认输"
+                hidden
+              >
+                🏳️
+              </button>
+              <button
+                class="menuButton half-height"
+                title="击球分析"
+                id="analysis"
+                type="button"
+                aria-label="击球分析"
+                hidden
+              >
+                🔍
+              </button>
+              <button
+                class="menuButton half-height"
+                title="无边框 (L)"
+                id="chromeless"
+                type="button"
+                aria-label="切换无边框模式"
+              >
+                👁︎
+              </button>
+              <button
+                class="menuButton half-height"
+                title="帮助"
+                id="help"
+                type="button"
+                aria-label="帮助"
+              >
+                𝑖
+              </button>
+            </div>
+          </details>
+          <canvas id="minimap" width="252" height="136" hidden>
+            台面小地图
+          </canvas>
+          <button
+            class="menuButton aim"
+            title="视角"
+            id="camera"
+            type="button"
+            aria-label="切换视角"
+          >
+            🎥
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="ballTray"
+        class="tray-container"
+        aria-live="polite"
+        role="log"
+        hidden
+      >
+        <div class="nav-btn btn-left" id="trayLeft">❮</div>
+        <div class="ball-tray-list" id="ballTrayList"></div>
+        <div class="nav-btn btn-right" id="trayRight">❯</div>
+      </div>
+      <div id="trayTimer" class="tray-timer" hidden></div>
+      <div class="tray-score-container">
+        <div id="p1Score" class="p1Score"></div>
+        <div id="p2Score" class="p2Score"></div>
+      </div>
+      <div id="lobbyContainer">
+        <div class="challenge-row">
+          <span id="challengePill" class="challenge-pill" hidden>
+            <button
+              id="challengeAccept"
+              type="button"
+              aria-label="接受挑战"
+            >
+              ✅
+            </button>
+            <button
+              id="challengeDecline"
+              type="button"
+              aria-label="拒绝挑战"
+            >
+              ❌
+            </button>
+          </span>
+          <span class="challenge-vs" aria-hidden="true">⚔</span>
+        </div>
+        <a
+          href="#"
+          class="pill"
+          title="好友对战（创建/加入房间）"
+          id="lobbyOverlay"
+          aria-label="好友对战"
+          ><span class="lobby-count"></span
+        ></a>
+      </div>
+    </main>
+
+    <div id="roomModal" hidden>
+      <div
+        class="room-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="roomTitle"
+      >
+        <button id="roomClose" class="room-close" type="button" aria-label="关闭">
+          ×
+        </button>
+        <h2 id="roomTitle">好友对战</h2>
+
+        <div id="roomSetup">
+          <label class="room-field"
+            >你的昵称
+            <input id="roomName" maxlength="12" autocomplete="nickname" />
+          </label>
+          <div class="room-actions">
+            <button id="roomCreate" type="button">创建房间</button>
+            <button id="roomJoinToggle" class="secondary" type="button">
+              加入房间
+            </button>
+          </div>
+          <div id="roomJoinBox" hidden>
+            <label class="room-field"
+              >房间号
+              <input
+                id="roomCode"
+                maxlength="6"
+                autocapitalize="characters"
+                autocomplete="off"
+                placeholder="例如 AB3K9"
+              />
+            </label>
+            <button id="roomJoin" type="button">进入房间</button>
+          </div>
+          <p class="room-note">
+            使用作者联机服务器，不挂梯子可直连；创建后把邀请链接发给对方。
+          </p>
+        </div>
+
+        <div id="roomInfo" hidden>
+          <p>房间号：<b id="roomCodeShow"></b></p>
+          <div id="roomInviteRow">
+            <label class="room-field"
+              >邀请链接
+              <input id="roomLink" readonly />
+            </label>
+            <div class="room-actions">
+              <button id="roomCopy" type="button">复制邀请链接</button>
+              <button id="roomCopyCode" class="secondary" type="button">
+                复制房间号
+              </button>
+            </div>
+          </div>
+          <p class="room-status" id="roomStatus">等待对手加入…</p>
+          <p class="room-note" id="roomLocalNote" hidden>
+            当前是本机地址，异地好友需部署到线上后再分享。
+          </p>
+        </div>
+      </div>
+    </div>
+    <script defer src="three_core.js"></script>
+    <script defer src="three_module.js"></script>
+    <script defer src="three_examples.js"></script>
+    <script defer src="messaging.js"></script>
+    <script defer src="index.js"></script>
+    <script>
+      ;(() => {
+        const params = new URLSearchParams(location.search)
+        if (!params.has("userName")) {
+          const url = new URL(location.href)
+          url.searchParams.set("userName", "球友")
+          history.replaceState(null, "", url)
+        }
+
+        if (matchMedia("(pointer: coarse)").matches) {
+          const howto = document.getElementById("zhHowto")
+          if (howto) {
+            howto.innerHTML =
+              "手指：<b>左右拖动</b>瞄准 · <b>下拉再快速前推</b>击球，推越快力度越大 · 点右下角<b>菜单</b>看帮助"
+          }
+        }
+      })()
+    </script>
+
+    <script>
+      ;(() => {
+        const SERVER = "wss://billiards-network.onrender.com"
+        const params = new URLSearchParams(location.search)
+        const modal = document.getElementById("roomModal")
+        if (!modal) return
+
+        const setup = document.getElementById("roomSetup")
+        const info = document.getElementById("roomInfo")
+        const joinBox = document.getElementById("roomJoinBox")
+        const nameInput = document.getElementById("roomName")
+        const codeInput = document.getElementById("roomCode")
+        const codeShow = document.getElementById("roomCodeShow")
+        const linkInput = document.getElementById("roomLink")
+        const inviteRow = document.getElementById("roomInviteRow")
+        const localNote = document.getElementById("roomLocalNote")
+        const status = document.getElementById("roomStatus")
+        const button = document.getElementById("lobbyOverlay")
+
+        const normalize = (value) =>
+          (value || "")
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "")
+            .slice(0, 6)
+        const roomCode = normalize(params.get("room"))
+        const inRoom =
+          roomCode.length >= 4 &&
+          params.get("tableId") === `room-${roomCode.toLowerCase()}`
+        const isHost = inRoom && params.get("host") === "1"
+        const isGuest = inRoom && !isHost
+        const isLocal = ["localhost", "127.0.0.1", "::1"].includes(
+          location.hostname
+        )
+        let bothJoined = false
+
+        const randomId = () => {
+          const bytes = new Uint8Array(4)
+          if (globalThis.crypto?.getRandomValues) {
+            globalThis.crypto.getRandomValues(bytes)
+          } else {
+            for (let i = 0; i < bytes.length; i++) {
+              bytes[i] = Math.floor(Math.random() * 256)
+            }
+          }
+          return [...bytes]
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("")
+        }
+
+        const makeCode = () => {
+          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+          const bytes = new Uint8Array(5)
+          if (globalThis.crypto?.getRandomValues) {
+            globalThis.crypto.getRandomValues(bytes)
+          } else {
+            for (let i = 0; i < bytes.length; i++) {
+              bytes[i] = Math.floor(Math.random() * 256)
+            }
+          }
+          return [...bytes].map((b) => chars[b % chars.length]).join("")
+        }
+
+        let guestLink = ""
+        if (inRoom) {
+          const gp = new URLSearchParams()
+          gp.set("room", roomCode)
+          gp.set("join", "1")
+          gp.set("websocketserver", SERVER)
+          gp.set("tableId", `room-${roomCode.toLowerCase()}`)
+          gp.set("userId", `g-${randomId()}`)
+          gp.set("userName", "球友")
+          gp.set("ruletype", params.get("ruletype") || "nineball")
+          guestLink = `${location.origin}${location.pathname}?${gp.toString()}`
+        }
+
+        let savedName = "球友"
+        try {
+          savedName = localStorage.getItem("billiards-room-name") || "球友"
+        } catch {
+          /* private mode */
+        }
+        nameInput.value = params.get("userName") || savedName
+
+        const readName = () => {
+          const name =
+            (nameInput.value || "球友").trim().slice(0, 12) || "球友"
+          nameInput.value = name
+          try {
+            localStorage.setItem("billiards-room-name", name)
+          } catch {
+            /* private mode */
+          }
+          return name
+        }
+
+        const go = (room, host) => {
+          const p = new URLSearchParams()
+          p.set("room", room)
+          if (host) {
+            p.set("host", "1")
+          } else {
+            p.set("join", "1")
+          }
+          p.set("websocketserver", SERVER)
+          p.set("tableId", `room-${room.toLowerCase()}`)
+          p.set("userId", `${host ? "h" : "g"}-${randomId()}`)
+          p.set("userName", readName())
+          if (host) p.set("first", "true")
+          p.set("ruletype", "nineball")
+          location.assign(`${location.origin}${location.pathname}?${p}`)
+        }
+
+        const updateStatus = () => {
+          if (!inRoom) return
+          if (isGuest) {
+            status.textContent = bothJoined
+              ? "已连接，等待房主开球"
+              : "正在连接房间…"
+            status.classList.toggle("ok", bothJoined)
+          } else {
+            status.textContent = bothJoined
+              ? "对手已加入，开球吧"
+              : "等待对手加入…"
+            status.classList.toggle("ok", bothJoined)
+          }
+        }
+
+        const showInfo = () => {
+          setup.hidden = true
+          info.hidden = false
+          codeShow.textContent = roomCode
+          linkInput.value = guestLink
+          inviteRow.hidden = isGuest
+          localNote.hidden = isGuest || !isLocal
+          updateStatus()
+        }
+
+        const openModal = () => {
+          modal.hidden = false
+          document.body.classList.add("room-modal-open")
+          if (inRoom) {
+            showInfo()
+          } else {
+            setup.hidden = false
+            info.hidden = true
+            joinBox.hidden = true
+          }
+        }
+
+        const closeModal = () => {
+          modal.hidden = true
+          document.body.classList.remove("room-modal-open")
+        }
+
+        button?.addEventListener("click", (event) => {
+          event.preventDefault()
+          event.stopImmediatePropagation()
+          openModal()
+        })
+
+        document.getElementById("roomClose")?.addEventListener("click", closeModal)
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) closeModal()
+        })
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !modal.hidden) {
+            event.preventDefault()
+            event.stopPropagation()
+            closeModal()
+          }
+        })
+
+        document.getElementById("roomCreate")?.addEventListener("click", () => {
+          go(makeCode(), true)
+        })
+
+        document
+          .getElementById("roomJoinToggle")
+          ?.addEventListener("click", () => {
+            joinBox.hidden = !joinBox.hidden
+            if (!joinBox.hidden) codeInput.focus()
+          })
+
+        codeInput.addEventListener("input", () => {
+          codeInput.value = normalize(codeInput.value)
+          codeInput.setCustomValidity("")
+        })
+
+        document.getElementById("roomJoin")?.addEventListener("click", () => {
+          const code = normalize(codeInput.value)
+          if (code.length < 4) {
+            codeInput.setCustomValidity("请输入 4-6 位房间号")
+            codeInput.reportValidity()
+            return
+          }
+          go(code, false)
+        })
+
+        codeInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            document.getElementById("roomJoin")?.click()
+          }
+        })
+
+        const copy = async (text, buttonEl) => {
+          let ok = false
+          try {
+            await navigator.clipboard.writeText(text)
+            ok = true
+          } catch {
+            const area = document.createElement("textarea")
+            area.value = text
+            area.style.position = "fixed"
+            area.style.opacity = "0"
+            document.body.appendChild(area)
+            area.select()
+            try {
+              ok = document.execCommand("copy")
+            } catch {
+              ok = false
+            }
+            area.remove()
+          }
+          const label = buttonEl.textContent
+          buttonEl.textContent = ok ? "已复制" : "复制失败"
+          setTimeout(() => {
+            buttonEl.textContent = label
+          }, 1500)
+        }
+
+        document.getElementById("roomCopy")?.addEventListener("click", (event) => {
+          copy(linkInput.value, event.currentTarget)
+        })
+        document
+          .getElementById("roomCopyCode")
+          ?.addEventListener("click", (event) => {
+            copy(roomCode, event.currentTarget)
+          })
+
+        window.addEventListener("billiards:bothjoined", () => {
+          bothJoined = true
+          if (!info.hidden) updateStatus()
+        })
+
+        if (isHost) {
+          setTimeout(openModal, 700)
+        }
+      })()
+    </script>
+
+    <script>
+      document.getElementById("zhHintClose")?.addEventListener("click", () => {
+        document.getElementById("zhHint")?.remove()
+      })
+
+      // Step-by-step coach for the first shot: place ball -> aim -> push.
+      let coachDone = false
+      const coachTimer = setInterval(() => {
+        const coach = document.getElementById("zhCoach")
+        const hit = document.getElementById("cueHit")
+        if (!coach || !hit || coachDone) {
+          clearInterval(coachTimer)
+          return
+        }
+        const label = (hit.innerText || "").trim()
+        if (label === "摆球") {
+          coach.textContent = "第一步：点击下方「摆球」放下白球"
+        } else if (label === "击球") {
+          coach.textContent =
+            "第二步：左右拖动瞄准；向下拉杆，再快速向前推击球"
+        } else {
+          coachDone = true
+          coach.textContent = "出杆！力度由推杆速度决定"
+          setTimeout(() => document.getElementById("zhHint")?.remove(), 2500)
+          clearInterval(coachTimer)
+        }
+      }, 400)
+    </script>
+  </body>
+</html>
