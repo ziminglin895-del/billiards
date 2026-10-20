@@ -41,30 +41,32 @@ describe("i18n", () => {
       expect(t("Waiting for opponent to join")).toBe("상대 입장 대기 중")
       expect(document.documentElement.lang).toBe("ko")
 
-      // Chinese ships one Traditional dictionary. Every `zh-*` tag resolves to
-      // it, so Simplified-browser visitors get Traditional characters rather
-      // than English, and the document advertises `zh-Hant` so the browser
-      // picks Traditional glyphs instead of guessing from the region.
+      // Chinese ships one Simplified dictionary. Every `zh-*` tag resolves to
+      // it, so Traditional-browser visitors get Simplified characters rather
+      // than English, and the document advertises `zh-CN` so the browser
+      // picks Simplified glyphs instead of guessing from the region.
       globalThis.history.replaceState({}, "", "?locale=zh")
-      expect(loadI18n().t("Hit")).toBe("擊球")
-      expect(loadI18n().t("Place\nBall")).toBe("放置\n母球")
-      expect(loadI18n().t("FOUL")).toBe("犯規")
-      expect(loadI18n().t("YOU WON")).toBe("勝利")
-      expect(loadI18n().t("Race to: {score}", { score: 20 })).toBe("搶 20 分")
-      expect(loadI18n().t("Break : {score}", { score: 3 })).toBe("單桿：3")
-      expect(document.documentElement.lang).toBe("zh-Hant")
+      expect(loadI18n().t("Hit")).toBe("击球")
+      expect(loadI18n().t("Place\nBall")).toBe("摆球")
+      expect(loadI18n().t("FOUL")).toBe("犯规")
+      expect(loadI18n().t("YOU WON")).toBe("胜利")
+      expect(loadI18n().t("Race to: {score}", { score: 20 })).toBe(
+        "先到 20 分"
+      )
+      expect(loadI18n().t("Break : {score}", { score: 3 })).toBe("单杆：3")
+      expect(document.documentElement.lang).toBe("zh-CN")
 
       for (const tag of ["zh-TW", "zh-HK", "zh-CN", "zh-Hans"]) {
         globalThis.history.replaceState({}, "", `?locale=${tag}`)
         expect(loadI18n().t("Ball in hand")).toBe("自由球")
-        expect(document.documentElement.lang).toBe("zh-Hant")
+        expect(document.documentElement.lang).toBe("zh-CN")
       }
 
-      // Browser detection strips the region the same way, so a Simplified
-      // OS preference (zh-CN) still reads Traditional rather than English.
+      // Browser detection strips the region the same way, so a Traditional
+      // OS preference (zh-TW) still reads Simplified rather than English.
       globalThis.history.replaceState({}, "", "?")
-      setLanguages(["zh-CN", "en-US"])
-      expect(loadI18n().t("YOU LOST")).toBe("落敗")
+      setLanguages(["zh-TW", "en-US"])
+      expect(loadI18n().t("YOU LOST")).toBe("你输了")
 
       // Unsupported explicit locale resolves to English rather than to the
       // browser language, so the result does not depend on the visitor's OS.
