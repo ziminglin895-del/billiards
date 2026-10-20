@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN" data-locale="zh">
   <head>
     <meta charset="UTF-8" />
@@ -269,8 +269,200 @@
         font-weight: 600;
       }
 
-      #roomLink {
+      #roomLink,
+      #roomWatchLink {
         font-size: 12px;
+      }
+
+      .room-field select {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin-top: 6px;
+        padding: 10px 12px;
+        border: 1px solid #3a3f4b;
+        border-radius: 8px;
+        background: #0d0f14;
+        color: #fff;
+        font: inherit;
+      }
+
+      #roomWatchRow {
+        margin-top: 14px;
+      }
+
+      .room-ai-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 10px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid rgb(255 255 255 / 10%);
+      }
+
+      .room-ai-row .room-field {
+        flex: 1 1 150px;
+        margin: 0;
+      }
+
+      .room-ai-row button {
+        flex: 0 1 130px;
+        min-height: 42px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 9px;
+        background: #2a2e38;
+        color: #fff;
+        font: 600 14px/1 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        cursor: pointer;
+      }
+
+      #zhRules {
+        position: fixed;
+        left: 12px;
+        top: 96px;
+        z-index: 610;
+        box-sizing: border-box;
+        width: min(370px, calc(100vw - 24px));
+        padding: 12px 14px;
+        border: 1px solid rgb(255 255 255 / 14%);
+        border-radius: 10px;
+        background: rgb(10 12 16 / 90%);
+        color: #e9e9e9;
+        font: 12px/1.6 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        box-shadow: 0 8px 28px rgb(0 0 0 / 40%);
+      }
+
+      #zhRules[hidden],
+      #zhRuleOpen[hidden],
+      #spectatorBadge[hidden] {
+        display: none;
+      }
+
+      #zhRuleTitle {
+        color: #ffd479;
+        font-size: 14px;
+      }
+
+      #zhRuleText {
+        margin-top: 5px;
+        color: #cfcfcf;
+      }
+
+      .zh-rule-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .zh-rule-actions button,
+      #zhRuleClose,
+      #zhRuleOpen {
+        border: 1px solid rgb(255 255 255 / 16%);
+        border-radius: 7px;
+        background: #232833;
+        color: #fff;
+        font: 12px/1 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        cursor: pointer;
+      }
+
+      .zh-rule-actions button {
+        min-height: 32px;
+        padding: 0 10px;
+      }
+
+      #zhRuleClose {
+        position: absolute;
+        right: 6px;
+        top: 4px;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        background: transparent;
+        border-color: transparent;
+        color: #aaa;
+        font-size: 17px;
+      }
+
+      #zhRuleOpen {
+        position: fixed;
+        left: 12px;
+        top: 96px;
+        z-index: 610;
+        min-height: 34px;
+        padding: 0 12px;
+        background: rgb(10 12 16 / 85%);
+        color: #ffd479;
+      }
+
+      #spectatorBadge {
+        position: fixed;
+        left: 50%;
+        top: 10px;
+        z-index: 620;
+        padding: 6px 12px;
+        border: 1px solid rgb(255 255 255 / 15%);
+        border-radius: 999px;
+        background: rgb(0 0 0 / 78%);
+        color: #9fd0ff;
+        font: 12px/1.4 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        transform: translateX(-50%);
+      }
+
+      #spectatorBadge b {
+        color: #ffd479;
+      }
+
+      #roomCapacity {
+        position: fixed;
+        inset: 0;
+        z-index: 4000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgb(0 0 0 / 70%);
+        color: #fff;
+        font: 14px/1.6 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+      }
+
+      #roomCapacity[hidden] {
+        display: none;
+      }
+
+      .room-capacity-card {
+        width: min(360px, 92vw);
+        padding: 20px;
+        border: 1px solid rgb(255 255 255 / 15%);
+        border-radius: 12px;
+        background: #14161c;
+        text-align: center;
+      }
+
+      .room-capacity-card b {
+        color: #ffd479;
+      }
+
+      #strokeTip {
+        margin-top: 6px;
+        color: #9aa0aa;
+        font: 11px/1.4 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        text-align: center;
+      }
+
+      body.spectating #zhHint,
+      body.spectating #zhRules,
+      body.spectating #zhRuleOpen,
+      body.spectating #strokeTip {
+        display: none;
       }
 
       @media (max-width: 600px) {
@@ -287,6 +479,25 @@
 
         .room-card {
           padding: 16px;
+        }
+
+        #zhRules,
+        #zhRuleOpen {
+          top: 116px;
+          left: 8px;
+          width: calc(100vw - 16px);
+        }
+
+        #zhRules {
+          padding: 10px 12px;
+        }
+
+        #spectatorBadge {
+          top: 8px;
+          max-width: calc(100vw - 20px);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
 
@@ -407,6 +618,26 @@
         按 <b>H</b> 看帮助
       </div>
       <button id="zhHintClose" type="button" aria-label="关闭提示">×</button>
+    </div>
+    <div id="zhRules">
+      <button id="zhRuleClose" type="button" aria-label="关闭规则">×</button>
+      <b id="zhRuleTitle">当前玩法：八球</b>
+      <div id="zhRuleText"></div>
+      <div class="zh-rule-actions">
+        <button type="button" data-rule="eightball">八球</button>
+        <button type="button" data-rule="nineball">九球</button>
+        <button type="button" id="zhRuleAi">人机对战</button>
+      </div>
+    </div>
+    <button id="zhRuleOpen" type="button" hidden>规则</button>
+    <div id="spectatorBadge" hidden>
+      👀 观战中 · 房间 <b id="spectatorRoom"></b> · 只读
+    </div>
+    <div id="roomCapacity" hidden>
+      <div class="room-capacity-card">
+        <b id="roomCapacityTitle">房间已满</b>
+        <p id="roomCapacityText">每个房间最多 2 名选手 + 3 名观战。</p>
+      </div>
     </div>
     <details class="about-more" id="about-more">
       <summary>About</summary>
@@ -769,10 +1000,12 @@
               class="hitButton timeout-btn"
               id="cueHit"
               type="button"
-              aria-label="击球"
+              aria-label="击球（也可在台面按住下拉再前推）"
+              title="点击直接击球；在台面任意位置按住向下拉，再快速向前推，可手动控制力度"
             >
               击球
             </button>
+            <div id="strokeTip">鼠标推杆：按住台面下拉，再快速前推</div>
           </div>
           <div id="tiltSliderContainer" class="tiltSliderContainer" hidden>
             <angle-input
@@ -1027,7 +1260,19 @@
         <div id="roomSetup">
           <label class="room-field"
             >你的昵称
-            <input id="roomName" maxlength="12" autocomplete="nickname" />
+            <input
+              id="roomName"
+              type="text"
+              maxlength="12"
+              autocomplete="nickname"
+            />
+          </label>
+          <label class="room-field"
+            >玩法
+            <select id="roomRule">
+              <option value="eightball">八球 · 开球进球后定花色</option>
+              <option value="nineball">九球 · 按号码从 1 打到 9</option>
+            </select>
           </label>
           <div class="room-actions">
             <button id="roomCreate" type="button">创建房间</button>
@@ -1040,6 +1285,7 @@
               >房间号
               <input
                 id="roomCode"
+                type="text"
                 maxlength="6"
                 autocapitalize="characters"
                 autocomplete="off"
@@ -1048,8 +1294,19 @@
             </label>
             <button id="roomJoin" type="button">进入房间</button>
           </div>
+          <div class="room-ai-row">
+            <label class="room-field"
+              >人机对手
+              <select id="roomAiName">
+                <option value="ClawBreak">ClawBreak · 稳健</option>
+                <option value="TheFarJaw">TheFarJaw · 进攻</option>
+              </select>
+            </label>
+            <button id="roomAi" type="button">人机对战</button>
+          </div>
           <p class="room-note">
-            使用作者联机服务器，不挂梯子可直连；创建后把邀请链接发给对方。
+            使用作者联机服务器，不挂梯子可直连。每个房间 2 名选手 + 最多 3
+            名观战；创建后分别复制选手链接和观战链接。
           </p>
         </div>
 
@@ -1057,14 +1314,23 @@
           <p>房间号：<b id="roomCodeShow"></b></p>
           <div id="roomInviteRow">
             <label class="room-field"
-              >邀请链接
-              <input id="roomLink" readonly />
+              >选手链接（发给 1 人）
+              <input id="roomLink" type="text" readonly />
             </label>
             <div class="room-actions">
-              <button id="roomCopy" type="button">复制邀请链接</button>
+              <button id="roomCopy" type="button">复制选手链接</button>
               <button id="roomCopyCode" class="secondary" type="button">
                 复制房间号
               </button>
+            </div>
+          </div>
+          <div id="roomWatchRow" hidden>
+            <label class="room-field"
+              >观战链接（最多 3 人）
+              <input id="roomWatchLink" type="text" readonly />
+            </label>
+            <div class="room-actions">
+              <button id="roomCopyWatch" type="button">复制观战链接</button>
             </div>
           </div>
           <p class="room-status" id="roomStatus">等待对手加入…</p>
@@ -1082,13 +1348,34 @@
     <script>
       ;(() => {
         const params = new URLSearchParams(location.search)
+        const spectator = params.has("spectator")
+        let changed = false
         if (!params.has("userName")) {
+          params.set("userName", spectator ? "观众" : "球友")
+          changed = true
+        }
+        if (!params.has("ruletype")) {
+          params.set("ruletype", "eightball")
+          changed = true
+        }
+        if (params.has("room") && !params.has("userId")) {
+          const prefix = spectator ? "s" : "g"
+          params.set(
+            "userId",
+            `${prefix}-${Math.random().toString(36).slice(2, 10)}`
+          )
+          changed = true
+        }
+        if (changed) {
           const url = new URL(location.href)
-          url.searchParams.set("userName", "球友")
+          url.search = params.toString()
           history.replaceState(null, "", url)
         }
+        if (spectator) {
+          document.body.classList.add("spectating")
+        }
 
-        if (matchMedia("(pointer: coarse)").matches) {
+        if (!spectator && matchMedia("(pointer: coarse)").matches) {
           const howto = document.getElementById("zhHowto")
           if (howto) {
             howto.innerHTML =
@@ -1112,10 +1399,19 @@
         const codeInput = document.getElementById("roomCode")
         const codeShow = document.getElementById("roomCodeShow")
         const linkInput = document.getElementById("roomLink")
+        const watchInput = document.getElementById("roomWatchLink")
         const inviteRow = document.getElementById("roomInviteRow")
+        const watchRow = document.getElementById("roomWatchRow")
         const localNote = document.getElementById("roomLocalNote")
         const status = document.getElementById("roomStatus")
         const button = document.getElementById("lobbyOverlay")
+        const ruleSelect = document.getElementById("roomRule")
+        const aiName = document.getElementById("roomAiName")
+        const capacity = document.getElementById("roomCapacity")
+        const capacityTitle = document.getElementById("roomCapacityTitle")
+        const capacityText = document.getElementById("roomCapacityText")
+        const spectatorBadge = document.getElementById("spectatorBadge")
+        const spectatorRoom = document.getElementById("spectatorRoom")
 
         const normalize = (value) =>
           (value || "")
@@ -1126,12 +1422,27 @@
         const inRoom =
           roomCode.length >= 4 &&
           params.get("tableId") === `room-${roomCode.toLowerCase()}`
-        const isHost = inRoom && params.get("host") === "1"
+        const isSpectator = inRoom && params.has("spectator")
+        const isHost = inRoom && !isSpectator && params.get("host") === "1"
+        const isPlayerGuest = inRoom && !isSpectator && !isHost
         const isGuest = inRoom && !isHost
+        const roomTableId = inRoom ? `room-${roomCode.toLowerCase()}` : ""
+        const currentRule = ["eightball", "nineball"].includes(
+          params.get("ruletype")
+        )
+          ? params.get("ruletype")
+          : "eightball"
         const isLocal = ["localhost", "127.0.0.1", "::1"].includes(
           location.hostname
         )
         let bothJoined = false
+        let roomPlayers = 0
+        let roomSpectators = 0
+        let capacityRedirected = false
+        if (isSpectator) {
+          const roomTitle = document.getElementById("roomTitle")
+          if (roomTitle) roomTitle.textContent = "观战房间"
+        }
 
         const randomId = () => {
           const bytes = new Uint8Array(4)
@@ -1161,16 +1472,22 @@
         }
 
         let guestLink = ""
-        if (inRoom) {
+        let spectatorLink = ""
+        if (inRoom && isHost) {
           const gp = new URLSearchParams()
           gp.set("room", roomCode)
           gp.set("join", "1")
           gp.set("websocketserver", SERVER)
-          gp.set("tableId", `room-${roomCode.toLowerCase()}`)
-          gp.set("userId", `g-${randomId()}`)
+          gp.set("tableId", roomTableId)
           gp.set("userName", "球友")
-          gp.set("ruletype", params.get("ruletype") || "nineball")
+          gp.set("ruletype", currentRule)
           guestLink = `${location.origin}${location.pathname}?${gp.toString()}`
+
+          const sp = new URLSearchParams(gp)
+          sp.delete("join")
+          sp.set("spectator", "1")
+          sp.set("userName", "观众")
+          spectatorLink = `${location.origin}${location.pathname}?${sp.toString()}`
         }
 
         let savedName = "球友"
@@ -1193,7 +1510,12 @@
           return name
         }
 
-        const go = (room, host) => {
+        const selectedRule = () =>
+          ["eightball", "nineball"].includes(ruleSelect.value)
+            ? ruleSelect.value
+            : "eightball"
+
+        const go = (room, host, rule = selectedRule()) => {
           const p = new URLSearchParams()
           p.set("room", room)
           if (host) {
@@ -1206,21 +1528,61 @@
           p.set("userId", `${host ? "h" : "g"}-${randomId()}`)
           p.set("userName", readName())
           if (host) p.set("first", "true")
-          p.set("ruletype", "nineball")
+          p.set("ruletype", rule)
           location.assign(`${location.origin}${location.pathname}?${p}`)
+        }
+
+        const startBot = () => {
+          const p = new URLSearchParams()
+          p.set("userName", readName())
+          p.set("ruletype", selectedRule())
+          p.set("bot", aiName.value || "ClawBreak")
+          p.set("lod", "4")
+          location.assign(`${location.origin}${location.pathname}?${p}`)
+        }
+
+        const showCapacity = (title, text) => {
+          if (!capacity) return
+          capacityTitle.textContent = title
+          capacityText.textContent = text
+          capacity.hidden = false
+        }
+
+        const switchToSpectator = () => {
+          if (capacityRedirected || isSpectator) return
+          capacityRedirected = true
+          showCapacity("选手位已满", "正在切换到观战…")
+          const next = new URLSearchParams(params)
+          next.delete("host")
+          next.delete("join")
+          next.delete("first")
+          next.set("spectator", "1")
+          next.set("userId", `s-${randomId()}`)
+          next.set("userName", "观众")
+          setTimeout(() => {
+            location.replace(
+              `${location.origin}${location.pathname}?${next.toString()}`
+            )
+          }, 1200)
         }
 
         const updateStatus = () => {
           if (!inRoom) return
-          if (isGuest) {
+          const watch = `观战 ${Math.min(roomSpectators, 3)}/3`
+          if (isSpectator) {
+            status.textContent = roomPlayers >= 2
+              ? `观战中 · ${watch} · 等待开球`
+              : `观战中 · ${watch} · 等待选手`
+            status.classList.toggle("ok", roomPlayers >= 2)
+          } else if (isPlayerGuest) {
             status.textContent = bothJoined
-              ? "已连接，等待房主开球"
-              : "正在连接房间…"
+              ? `已连接 · ${watch} · 等待房主开球`
+              : `正在连接房间… · ${watch}`
             status.classList.toggle("ok", bothJoined)
           } else {
             status.textContent = bothJoined
-              ? "对手已加入，开球吧"
-              : "等待对手加入…"
+              ? `对手已加入，开球吧 · ${watch}`
+              : `等待对手加入… · ${watch}`
             status.classList.toggle("ok", bothJoined)
           }
         }
@@ -1230,7 +1592,9 @@
           info.hidden = false
           codeShow.textContent = roomCode
           linkInput.value = guestLink
+          watchInput.value = spectatorLink
           inviteRow.hidden = isGuest
+          watchRow.hidden = !isHost
           localNote.hidden = isGuest || !isLocal
           updateStatus()
         }
@@ -1270,9 +1634,13 @@
           }
         })
 
+        ruleSelect.value = currentRule
+
         document.getElementById("roomCreate")?.addEventListener("click", () => {
-          go(makeCode(), true)
+          go(makeCode(), true, selectedRule())
         })
+
+        document.getElementById("roomAi")?.addEventListener("click", startBot)
 
         document
           .getElementById("roomJoinToggle")
@@ -1336,11 +1704,80 @@
           ?.addEventListener("click", (event) => {
             copy(roomCode, event.currentTarget)
           })
+        document
+          .getElementById("roomCopyWatch")
+          ?.addEventListener("click", (event) => {
+            copy(watchInput.value, event.currentTarget)
+          })
 
         window.addEventListener("billiards:bothjoined", () => {
           bothJoined = true
           if (!info.hidden) updateStatus()
         })
+
+        window.addEventListener("billiards:presence", (event) => {
+          if (!inRoom) return
+          const users = Array.isArray(event.detail) ? event.detail : []
+          const ids = new Set()
+          const spectators = []
+          const players = []
+          for (const user of users) {
+            if (user?.tableId !== roomTableId || !user.userId) continue
+            const key = `${user.isSpectator ? "s" : "p"}:${user.userId}`
+            if (ids.has(key)) continue
+            ids.add(key)
+            if (user.isSpectator) {
+              spectators.push(user)
+            } else {
+              players.push(user)
+            }
+          }
+          roomPlayers = players.length
+          roomSpectators = spectators.length
+
+          if (isSpectator) {
+            const myIndex = spectators.findIndex(
+              (user) => user.userId === SessionClientId()
+            )
+            if (myIndex >= 3 && !capacityRedirected) {
+              capacityRedirected = true
+              showCapacity("观战位已满", "这个房间最多 3 名观战。正在返回大厅…")
+              setTimeout(() => {
+                location.replace(`${location.origin}${location.pathname}`)
+              }, 2200)
+              return
+            }
+          }
+
+          if (!isSpectator && players.length > 2) {
+            const index = players.findIndex(
+              (user) => user.userId === SessionClientId()
+            )
+            if (index >= 2) {
+              switchToSpectator()
+              return
+            }
+          }
+
+          if (!info.hidden) updateStatus()
+          if (isSpectator && spectatorBadge) {
+            spectatorBadge.hidden = false
+            spectatorRoom.textContent = roomCode
+          }
+        })
+
+        const SessionClientId = () => params.get("userId") || ""
+
+        if (isSpectator) {
+          document.body.classList.add("spectating")
+          if (spectatorBadge) {
+            spectatorBadge.hidden = false
+            spectatorRoom.textContent = roomCode
+          }
+          if (status) {
+            status.textContent = "观战中 · 等待选手"
+          }
+        }
 
         if (isHost) {
           setTimeout(openModal, 700)
@@ -1370,11 +1807,93 @@
             "第二步：左右拖动瞄准；向下拉杆，再快速向前推击球"
         } else {
           coachDone = true
-          coach.textContent = "出杆！力度由推杆速度决定"
-          setTimeout(() => document.getElementById("zhHint")?.remove(), 2500)
+          coach.textContent =
+            "出杆！下次可在台面按住向下拉，再快速前推，自己控制力度"
+          setTimeout(() => document.getElementById("zhHint")?.remove(), 4200)
           clearInterval(coachTimer)
         }
       }, 400)
+    </script>
+
+    <script>
+      ;(() => {
+        const params = new URLSearchParams(location.search)
+        const card = document.getElementById("zhRules")
+        const open = document.getElementById("zhRuleOpen")
+        const title = document.getElementById("zhRuleTitle")
+        const text = document.getElementById("zhRuleText")
+        const close = document.getElementById("zhRuleClose")
+        const ai = document.getElementById("zhRuleAi")
+        if (!card || !open || !title || !text) return
+
+        const rules = {
+          eightball: {
+            label: "八球",
+            text: "开球后第一颗合法进袋的球决定花色；先清完本方 7 颗，再打进 8 号。白球落袋、空杆、先碰错球都算犯规，对手自由球。",
+          },
+          nineball: {
+            label: "九球",
+            text: "按号码从小到大先碰目标球；任意球进袋可继续；打进 9 号直接获胜。白球落袋或空杆犯规，对手自由球。",
+          },
+        }
+        let current = params.get("ruletype") || "eightball"
+        if (!rules[current]) current = "eightball"
+
+        const render = () => {
+          const info = rules[current]
+          title.textContent = `当前玩法：${info.label}`
+          text.textContent = info.text
+          for (const b of card.querySelectorAll("[data-rule]")) {
+            b.style.outline =
+              b.dataset.rule === current ? "1px solid #ffd479" : ""
+          }
+        }
+
+        const go = (next) => {
+          const p = new URLSearchParams(location.search)
+          p.set("ruletype", next)
+          p.delete("state")
+          p.delete("room")
+          p.delete("host")
+          p.delete("join")
+          p.delete("spectator")
+          p.delete("tableId")
+          p.delete("websocketserver")
+          p.delete("first")
+          location.assign(`${location.origin}${location.pathname}?${p}`)
+        }
+
+        close?.addEventListener("click", () => {
+          card.hidden = true
+          open.hidden = false
+        })
+        open.addEventListener("click", () => {
+          card.hidden = false
+          open.hidden = true
+        })
+        for (const b of card.querySelectorAll("[data-rule]")) {
+          b.addEventListener("click", () => {
+            if (b.dataset.rule !== current) go(b.dataset.rule)
+          })
+        }
+        ai?.addEventListener("click", () => {
+          const p = new URLSearchParams()
+          p.set("userName", params.get("userName") || "球友")
+          p.set("ruletype", current)
+          p.set("bot", "ClawBreak")
+          p.set("lod", "4")
+          location.assign(`${location.origin}${location.pathname}?${p}`)
+        })
+
+        render()
+        if (params.has("room") || params.has("spectator")) {
+          card.hidden = true
+          open.hidden = true
+        } else {
+          card.hidden = false
+          open.hidden = true
+        }
+      })()
     </script>
   </body>
 </html>

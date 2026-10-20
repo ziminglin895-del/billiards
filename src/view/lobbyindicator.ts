@@ -241,6 +241,11 @@ export class LobbyIndicator {
         this.opponentOnline = null
       }
       this.updateDisplay()
+      if (typeof globalThis.dispatchEvent === "function") {
+        globalThis.dispatchEvent(
+          new CustomEvent("billiards:presence", { detail: users })
+        )
+      }
     })
 
     this.lobby.onChat((chat: ChatMessage) => {
