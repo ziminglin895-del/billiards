@@ -452,6 +452,10 @@
         .zh-assistant {
           display: none;
         }
+
+        #zhAssistantNext {
+          display: none;
+        }
       }
 
       body.spectating .zh-assistant {
@@ -666,6 +670,9 @@
         <button type="button" data-rule="eightball">八球</button>
         <button type="button" data-rule="nineball">九球</button>
         <button type="button" id="zhRuleAi">人机对战</button>
+        <button type="button" id="zhAssistantNext" title="切换桌边助手">
+          换助手
+        </button>
       </div>
     </div>
     <button id="zhRuleOpen" type="button" hidden>规则</button>
@@ -1937,26 +1944,65 @@
 
     <script>
       ;(() => {
-        for (const [side, name] of [
-          ["left", "assistant-left"],
-          ["right", "assistant-right"],
-        ]) {
+        const styles = [
+          "bikini",
+          "teacher",
+          "doctor",
+          "nurse",
+          "secretary",
+          "sporty",
+        ]
+        const params = new URLSearchParams(location.search)
+        const requested = params.get("assistant")
+        const boxes = new Map()
+        let current = styles.includes(requested)
+          ? requested
+          : styles[Math.floor(Math.random() * styles.length)]
+        let generation = 0
+
+        const boxFor = (side) => {
+          let box = boxes.get(side)
+          if (box) return box
+          box = document.createElement("div")
+          box.className = `zh-assistant ${side}`
+          box.setAttribute("aria-hidden", "true")
           const img = new Image()
           img.alt = ""
-          img.onload = () => {
-            if (!img.naturalWidth) return
-            const box = document.createElement("div")
-            box.className = `zh-assistant ${side}`
-            box.setAttribute("aria-hidden", "true")
-            box.appendChild(img)
-            document.body.appendChild(box)
-            requestAnimationFrame(() => box.classList.add("show"))
-          }
-          img.onerror = () => {
-            img.onerror = null
-          }
-          img.src = `images/${name}.webp`
+          box.appendChild(img)
+          document.body.appendChild(box)
+          boxes.set(side, box)
+          return box
         }
+
+        const apply = (style) => {
+          current = style
+          const token = ++generation
+          document.body.dataset.assistantStyle = style
+          for (const side of ["left", "right"]) {
+            const box = boxFor(side)
+            const img = box.querySelector("img")
+            box.dataset.style = style
+            box.classList.remove("show")
+            img.onload = () => {
+              if (token !== generation) return
+              if (img.naturalWidth < 8) return
+              box.classList.add("show")
+            }
+            img.onerror = () => {
+              if (token === generation) box.classList.remove("show")
+            }
+            img.src = `images/assistant-${style}-${side}.webp`
+          }
+        }
+
+        document
+          .getElementById("zhAssistantNext")
+          ?.addEventListener("click", () => {
+            const index = styles.indexOf(current)
+            apply(styles[(index + 1) % styles.length])
+          })
+
+        apply(current)
       })()
     </script>
   </body>
