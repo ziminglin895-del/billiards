@@ -162,6 +162,29 @@ export class CueHit {
     )
   }
 
+  /** Button mode (and the startup chooser) owns the shot trigger, so a drag
+   * on the table must not arm this gesture. The body class is the live source
+   * of truth; storage is a fallback for headless or pre-paint tests. */
+  private dragDisabled(): boolean {
+    const body = globalThis.document?.body
+    if (
+      body?.classList.contains("control-button") ||
+      body?.classList.contains("control-pending")
+    ) {
+      return true
+    }
+    if (body?.classList.contains("control-drag")) {
+      return false
+    }
+    try {
+      return (
+        globalThis.localStorage?.getItem("billiards-control-mode") === "button"
+      )
+    } catch {
+      return false
+    }
+  }
+
   private onPointerDown = (e: PointerEvent) => {
     if (!this.armed || this.active || !e.isPrimary || e.button !== 0) {
       return
@@ -177,6 +200,9 @@ export class CueHit {
     // spin gesture so both never own the same pointer.
     if (this.spin?.hitCueBall(e)) {
       this.spin.start(e)
+      return
+    }
+    if (this.dragDisabled()) {
       return
     }
     if (!this.hitCue(e)) {

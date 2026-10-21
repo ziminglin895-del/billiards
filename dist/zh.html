@@ -148,6 +148,94 @@
         display: none;
       }
 
+      #controlModal {
+        position: fixed;
+        inset: 0;
+        z-index: 5000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgb(0 0 0 / 72%);
+        font: 14px/1.55 "Microsoft YaHei", "PingFang SC", system-ui,
+          sans-serif;
+        touch-action: manipulation;
+      }
+
+      #controlModal[hidden] {
+        display: none;
+      }
+
+      .control-card {
+        box-sizing: border-box;
+        width: min(92vw, 520px);
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        padding: 22px;
+        border: 1px solid rgb(255 255 255 / 14%);
+        border-radius: 14px;
+        background: #14161c;
+        color: #f2f2f2;
+        box-shadow: 0 12px 40px rgb(0 0 0 / 60%);
+      }
+
+      .control-card h2 {
+        margin: 0 0 6px;
+        color: #ffd479;
+        font-size: 18px;
+      }
+
+      .control-card p {
+        margin: 0;
+        color: #b8bdc8;
+        font-size: 13px;
+      }
+
+      .control-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 16px 0 12px;
+      }
+
+      .control-option {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        min-height: 96px;
+        padding: 14px;
+        border: 1px solid rgb(255 255 255 / 16%);
+        border-radius: 10px;
+        background: #202530;
+        color: #fff;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .control-option:hover,
+      .control-option:focus-visible {
+        border-color: #ffd479;
+        outline: none;
+      }
+
+      .control-option[aria-pressed="true"] {
+        border-color: #ffd479;
+        background: #2d2a20;
+      }
+
+      .control-note {
+        color: #8f96a3 !important;
+        font-size: 12px !important;
+      }
+
+      @media (max-width: 600px) {
+        .control-options {
+          grid-template-columns: 1fr;
+        }
+      }
+
       body.room-modal-open #zhHint,
       body.room-modal-open #lobbyContainer {
         visibility: hidden;
@@ -505,6 +593,22 @@
         display: none;
       }
 
+      body.control-drag #cueHit.control-hidden,
+      body.control-drag #powerSliderContainer {
+        display: none !important;
+      }
+
+      body.control-button #strokeTip {
+        display: none !important;
+      }
+
+      body.control-modal-open #zhHint,
+      body.control-modal-open #zhRules,
+      body.control-modal-open #zhRuleOpen,
+      body.control-modal-open #lobbyContainer {
+        visibility: hidden;
+      }
+
       @media (max-width: 600px) {
         #zhHint {
           top: 58px;
@@ -546,6 +650,17 @@
           top: 58px;
           font-size: 12px;
         }
+      }
+
+      #controlModal .control-option b {
+        color: #ffd479;
+        font-size: 15px;
+      }
+
+      #controlModal .control-option span {
+        color: #b8bdc8;
+        font-size: 12px;
+        line-height: 1.55;
       }
     </style>
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -651,6 +766,24 @@
   </head>
 
   <body>
+    <script>
+      // Apply a stored control mode before the panel paints, so returning
+      // players never see the controls they turned off.
+      ;(() => {
+        try {
+          const requested = new URLSearchParams(location.search).get("control")
+          const stored = localStorage.getItem("billiards-control-mode")
+          const mode =
+            requested === "drag" || requested === "button" ? requested : stored
+          if (mode === "drag" || mode === "button") {
+            document.body.classList.add(`control-${mode}`)
+          }
+        } catch {
+          // Storage can be unavailable in private browsing; the setup modal
+          // will handle the choice in memory instead.
+        }
+      })()
+    </script>
     <div id="zhHint">
       <div id="zhCoach">第一步：点击下方「摆球」放下白球</div>
       <div id="zhHowto">
@@ -667,6 +800,7 @@
         <button type="button" data-rule="eightball">八球</button>
         <button type="button" data-rule="nineball">九球</button>
         <button type="button" id="zhRuleAi">人机对战</button>
+        <button type="button" id="zhControlOpen">操作方式</button>
       </div>
     </div>
     <button id="zhRuleOpen" type="button" hidden>规则</button>
@@ -1285,6 +1419,40 @@
       </div>
     </main>
 
+    <div id="controlModal" hidden>
+      <div
+        class="control-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="controlTitle"
+        aria-describedby="controlDesc"
+      >
+        <h2 id="controlTitle">选择操作方式</h2>
+        <p id="controlDesc">开局选一种，之后只启用这一种。选错了可以点左上角规则卡里的“操作方式”重选。</p>
+        <div class="control-options">
+          <button
+            type="button"
+            class="control-option"
+            data-control-mode="drag"
+            aria-pressed="false"
+          >
+            <b>鼠标推杆</b>
+            <span>按住台面下拉，再快速前推。右下角“击球”按钮和蓄力条隐藏。</span>
+          </button>
+          <button
+            type="button"
+            class="control-option"
+            data-control-mode="button"
+            aria-pressed="false"
+          >
+            <b>击球按钮</b>
+            <span>拖动瞄准，调好蓄力条，点右下角“击球”。台面拉杆不再出杆。</span>
+          </button>
+        </div>
+        <p class="control-note">鼠标推杆的力度由前推速度决定；击球按钮的力度由下方蓄力条决定。</p>
+      </div>
+    </div>
+
     <div id="roomModal" hidden>
       <div
         class="room-card"
@@ -1826,6 +1994,155 @@
     </script>
 
     <script>
+      // One control method per player. The choice is stored locally; the body
+      // class is also read by CueHit so button mode cannot start a drag shot.
+      ;(() => {
+        const STORAGE_KEY = "billiards-control-mode"
+        const MODES = ["drag", "button"]
+        const params = new URLSearchParams(location.search)
+        const requested = params.get("control")
+        const modal = document.getElementById("controlModal")
+        const howto = document.getElementById("zhHowto")
+        const hit = document.getElementById("cueHit")
+        const buttons = Array.from(
+          document.querySelectorAll("[data-control-mode]")
+        )
+        const spectator =
+          document.body.classList.contains("spectating") ||
+          params.get("spectator") === "1"
+        let current = null
+
+        const readSaved = () => {
+          try {
+            const value = localStorage.getItem(STORAGE_KEY)
+            return MODES.includes(value) ? value : null
+          } catch {
+            return null
+          }
+        }
+
+        const save = (mode) => {
+          try {
+            localStorage.setItem(STORAGE_KEY, mode)
+          } catch {
+            // In-memory class is enough for this page when storage is blocked.
+          }
+        }
+
+        const markSelected = (mode) => {
+          buttons.forEach((button) => {
+            button.setAttribute(
+              "aria-pressed",
+              String(button.dataset.controlMode === mode)
+            )
+          })
+        }
+
+        const closeModal = () => {
+          if (modal) {
+            modal.hidden = true
+          }
+          document.body.classList.remove(
+            "control-pending",
+            "control-modal-open"
+          )
+        }
+
+        const syncHitVisibility = () => {
+          if (!hit) {
+            return
+          }
+          const label = (hit.innerText || "").trim()
+          const hide =
+            document.body.classList.contains("control-drag") &&
+            (label === "击球" || label === "Hit")
+          hit.classList.toggle("control-hidden", hide)
+        }
+
+        const apply = (mode) => {
+          current = mode
+          document.body.classList.toggle("control-drag", mode === "drag")
+          document.body.classList.toggle("control-button", mode === "button")
+          document.body.dataset.controlMode = mode
+          save(mode)
+          syncHitVisibility()
+          markSelected(mode)
+          if (howto) {
+            howto.innerHTML =
+              mode === "drag"
+                ? "鼠标推杆：<b>按住台面下拉</b>，再<b>快速前推</b>击球，推得越快力度越大 · 按 <b>H</b> 看帮助"
+                : "按钮模式：<b>左右拖动</b>瞄准，调好蓄力条后点右下角 <b>击球</b> · 按 <b>H</b> 看帮助"
+          }
+          if (hit) {
+            hit.title =
+              mode === "button"
+                ? "点击直接击球"
+                : "在台面按住下拉，再快速向前推击球"
+            hit.setAttribute(
+              "aria-label",
+              mode === "button" ? "击球" : "击球（鼠标推杆）"
+            )
+          }
+          closeModal()
+          window.dispatchEvent(
+            new CustomEvent("billiards:controlmode", { detail: mode })
+          )
+        }
+
+        const openModal = () => {
+          if (!modal) {
+            return
+          }
+          modal.hidden = false
+          document.body.classList.add("control-pending", "control-modal-open")
+          markSelected(current)
+          const focus =
+            buttons.find((button) => button.dataset.controlMode === current) ||
+            buttons[0]
+          focus?.focus({ preventScroll: true })
+        }
+
+        if (spectator) {
+          if (modal) {
+            modal.hidden = true
+          }
+          return
+        }
+
+        const forced = MODES.includes(requested) ? requested : null
+        current = forced || readSaved()
+        if (requested === "choose") {
+          openModal()
+        } else if (current) {
+          apply(current)
+        } else {
+          openModal()
+        }
+
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const mode = button.dataset.controlMode
+            if (MODES.includes(mode)) {
+              apply(mode)
+            }
+          })
+        })
+        document
+          .getElementById("zhControlOpen")
+          ?.addEventListener("click", openModal)
+
+        if (hit && typeof MutationObserver !== "undefined") {
+          new MutationObserver(syncHitVisibility).observe(hit, {
+            childList: true,
+            characterData: true,
+            subtree: true,
+          })
+        }
+        syncHitVisibility()
+      })()
+    </script>
+
+    <script>
       document.getElementById("zhHintClose")?.addEventListener("click", () => {
         document.getElementById("zhHint")?.remove()
       })
@@ -1840,15 +2157,19 @@
           return
         }
         const label = (hit.innerText || "").trim()
+        const buttonMode =
+          document.body.classList.contains("control-button")
         if (label === "摆球") {
           coach.textContent = "第一步：点击下方「摆球」放下白球"
         } else if (label === "击球") {
-          coach.textContent =
-            "第二步：左右拖动瞄准；向下拉杆，再快速向前推击球"
+          coach.textContent = buttonMode
+            ? "第二步：左右拖动瞄准，点右下角「击球」"
+            : "第二步：左右拖动瞄准；向下拉杆，再快速向前推击球"
         } else {
           coachDone = true
-          coach.textContent =
-            "出杆！下次可在台面按住向下拉，再快速前推，自己控制力度"
+          coach.textContent = buttonMode
+            ? "出杆！按钮模式：调好蓄力条，点「击球」出杆"
+            : "出杆！下次可在台面按住向下拉，再快速前推，自己控制力度"
           setTimeout(() => document.getElementById("zhHint")?.remove(), 4200)
           clearInterval(coachTimer)
         }
@@ -1890,6 +2211,10 @@
         }
 
         const go = (next) => {
+          if (rules[next]) {
+            current = next
+            render()
+          }
           const p = new URLSearchParams(location.search)
           p.set("ruletype", next)
           p.delete("state")
