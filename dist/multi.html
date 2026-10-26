@@ -89,9 +89,11 @@
       const urlParams = new URLSearchParams(window.location.search)
       const nonlocal = urlParams.has("nonlocal")
       const wss =
-        window.location.hostname !== "localhost" || nonlocal
+        window.location.protocol === "https:"
           ? "wss://billiards-network.onrender.com"
-          : "ws://localhost"
+          : window.location.hostname !== "localhost" || nonlocal
+            ? "http://62.234.154.21:8084"
+            : "ws://localhost"
       const shotClock = urlParams.get("shotClock")
       const wssparam = `websocketserver=${wss}`
       const elts = document.getElementsByClassName("addwss")

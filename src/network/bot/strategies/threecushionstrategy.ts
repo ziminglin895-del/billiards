@@ -4,6 +4,7 @@ import { Vector3 } from "three"
 import { AimCalculator } from "../aimcalculator"
 import { BotShotContext, BotStrategy } from "../botstrategy"
 import { Cushion } from "../../../model/physics/cushion"
+import { aimNoise, powerScale } from "../botdifficulty"
 
 type ShotCandidate = {
   overlap: number
@@ -139,8 +140,8 @@ export class ThreeStrategy implements BotStrategy {
 
     const shot = calculator.generateShot(
       context.table,
-      0,
-      this.power,
+      aimNoise(context.difficulty),
+      this.power * powerScale(context.difficulty),
       best.ghostPos,
       new Vector3(sideSpin, 0, 0)
     )

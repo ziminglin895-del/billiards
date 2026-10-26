@@ -26,6 +26,7 @@ describe("ThreeStrategy", () => {
       cueBall,
       validTargetBalls: [targetBall1, targetBall2],
       ballInHand: false,
+      difficulty: "normal",
     }
 
     const events = strategy.aim(context, calculator)
@@ -55,6 +56,7 @@ describe("ThreeStrategy", () => {
       cueBall,
       validTargetBalls: [targetBall1, targetBall2],
       ballInHand: false,
+      difficulty: "normal",
     }
 
     const consoleSpy = jest.spyOn(console, "log")
@@ -78,6 +80,7 @@ describe("ThreeStrategy", () => {
       cueBall,
       validTargetBalls: [],
       ballInHand: false,
+      difficulty: "normal",
     }
 
     const events = strategy.aim(context, calculator)

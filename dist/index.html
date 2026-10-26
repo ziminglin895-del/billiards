@@ -184,13 +184,17 @@
     <link rel="stylesheet" type="text/css" href="css/menu.css" />
     <link rel="stylesheet" type="text/css" href="css/wood.css" />
     <script>
-      // Chinese browsers land on the translated play page. ?lang=en opts out.
+      // The Tencent deployment is Chinese-first; other deployments keep the
+      // browser-language check. ?lang=en opts out of the Chinese page.
       try {
         const q = new URLSearchParams(location.search)
         const langs = navigator.languages?.length
           ? navigator.languages
           : [navigator.language]
-        const wantsZh = langs.some((l) => (l || "").toLowerCase().startsWith("zh"))
+        const isTencent = location.hostname === "62.234.154.21"
+        const wantsZh =
+          isTencent ||
+          langs.some((l) => (l || "").toLowerCase().startsWith("zh"))
         if (wantsZh && q.get("lang") !== "en") {
           location.replace("zh.html" + location.search)
         }

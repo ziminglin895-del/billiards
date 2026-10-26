@@ -151,10 +151,14 @@ export class AimInputs {
       if (this.controlsDisabled) {
         this.timeoutButton?.cancel()
       } else {
+        // Online games keep the shot clock, but a local bot must never fire on
+        // the player's behalf; they can take as long as they need to aim.
         const useShotClock =
-          !this.container.isSinglePlayer || Session.isBotMode()
+          !this.container.isSinglePlayer && !Session.isBotMode()
         if (useShotClock) {
           this.timeoutButton?.startTimer()
+        } else {
+          this.timeoutButton?.cancel()
         }
       }
     }

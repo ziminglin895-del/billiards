@@ -6,6 +6,7 @@ import { Respot } from "../../../utils/respot"
 import { AimCalculator } from "../aimcalculator"
 import { BotShotContext, BotStrategy } from "../botstrategy"
 import { TableGeometry } from "../../../view/tablegeometry"
+import { aimNoise, powerScale, spinOffset } from "../botdifficulty"
 
 import { ThreeStrategy } from "./threecushionstrategy"
 
@@ -52,15 +53,17 @@ export class TheFarJaw implements BotStrategy {
 
     const pocketHitEvent = calculator.generateShot(
       context.table,
-      0,
-      AimCalculator.DEFAULT_SHOT_POWER,
+      aimNoise(context.difficulty),
+      AimCalculator.DEFAULT_SHOT_POWER * powerScale(context.difficulty),
       aimPoint,
-      new Vector3(0, 0, 0)
+      context.difficulty === "easy"
+        ? spinOffset(context.difficulty)
+        : new Vector3(0, 0, 0)
     )
     const farKnuckleHitEvent = calculator.generateShot(
       context.table,
-      0,
-      AimCalculator.MAX_SHOT_POWER,
+      aimNoise(context.difficulty),
+      AimCalculator.MAX_SHOT_POWER * powerScale(context.difficulty),
       farKnuckleAimPoint,
       new Vector3(0, -0.3, 0)
     )

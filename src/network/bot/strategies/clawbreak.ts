@@ -7,6 +7,7 @@ import { AimCalculator } from "../aimcalculator"
 import { BotShotContext, BotStrategy } from "../botstrategy"
 import { TableGeometry } from "../../../view/tablegeometry"
 import { ThreeStrategy } from "./threecushionstrategy"
+import { aimNoise, powerScale, spinOffset } from "../botdifficulty"
 
 export class ClawBreak implements BotStrategy {
   readonly name = "ClawBreak"
@@ -24,9 +25,10 @@ export class ClawBreak implements BotStrategy {
     const aimPoint = calculator.getAimPoint(context.cueBall.pos, targetPoint)
     const hitEvent = calculator.generateShot(
       context.table,
-      0,
-      AimCalculator.DEFAULT_SHOT_POWER,
-      aimPoint ?? undefined
+      aimNoise(context.difficulty),
+      AimCalculator.DEFAULT_SHOT_POWER * powerScale(context.difficulty),
+      aimPoint ?? undefined,
+      spinOffset(context.difficulty)
     )
     const aimEvent = AimEvent.fromJson(hitEvent.tablejson.aim)
     return [aimEvent, hitEvent]

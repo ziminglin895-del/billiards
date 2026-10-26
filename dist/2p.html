@@ -67,12 +67,13 @@
     <script>
       const urlParams = new URLSearchParams(window.location.search)
       if (!urlParams.has("websocketserver")) {
-        urlParams.set(
-          "websocketserver",
-          window.location.hostname === "localhost"
-            ? "ws://localhost"
-            : "wss://billiards-network.onrender.com"
-        )
+        const fallbackServer =
+          window.location.protocol === "https:"
+            ? "wss://billiards-network.onrender.com"
+            : window.location.hostname === "localhost"
+              ? "ws://localhost"
+              : "http://62.234.154.21:8084"
+        urlParams.set("websocketserver", fallbackServer)
       }
       if (!urlParams.has("ruletype")) {
         urlParams.set("ruletype", "nineball")

@@ -22,6 +22,8 @@ import { t } from "../../utils/i18n"
 import { BotShotContext, BotStrategy } from "./botstrategy"
 import { ClawBreak } from "./strategies/clawbreak"
 import { TheFarJaw } from "./strategies/thefarjaw"
+import { BotDifficulty, parseBotDifficulty } from "./botdifficulty"
+import { BotPlacement } from "./placement"
 
 class BotContainer {
   table
@@ -48,6 +50,7 @@ export class BotEventHandler {
   private readonly calculator: AimCalculator
   private readonly strategy: BotStrategy
   protected readonly botRules: Rules
+  private readonly difficulty: BotDifficulty
   private shouldStartTurnOnNextControl = false
   private queuedOwnStartAim = false
 
@@ -65,6 +68,9 @@ export class BotEventHandler {
     const botName =
       new URLSearchParams(globalThis.location.search).get("bot") ?? "ClawBreak"
     this.strategy = botName === "TheFarJaw" ? new TheFarJaw() : new ClawBreak()
+    this.difficulty = parseBotDifficulty(
+      new URLSearchParams(globalThis.location.search).get("botLevel")
+    )
     this.botRules = RuleFactory.create(
       container.rules.rulename,
       new BotContainer(container)
@@ -478,8 +484,14 @@ export class BotEventHandler {
     }
 
     const cueball = table.cueball
+    const chosen =
+      !isFirstShot(this.container.recorder) &&
+      ["eightball", "nineball"].includes(this.container.rules.rulename)
+        ? BotPlacement.choose(this.buildShotContext(true), this.calculator)
+        : undefined
     Respot.respotBehind(
-      event.useStartPos ? event.pos : this.container.rules.placeBall(),
+      chosen ??
+        (event.useStartPos ? event.pos : this.container.rules.placeBall()),
       cueball,
       table
     )
@@ -501,7 +513,7 @@ export class BotEventHandler {
     return this.strategy.aim(this.buildShotContext(), this.calculator)
   }
 
-  private buildShotContext(): BotShotContext {
+  private buildShotContext(ballInHand = false): BotShotContext {
     const cueBall =
       this.container.rules.rulename === "threecushion" ||
       this.container.rules.rulename === "sagu"
@@ -512,7 +524,8 @@ export class BotEventHandler {
       table: this.container.table,
       cueBall,
       validTargetBalls: this.validTargetBalls(),
-      ballInHand: false,
+      ballInHand,
+      difficulty: this.difficulty,
     }
   }
 }

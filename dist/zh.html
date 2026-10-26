@@ -130,7 +130,8 @@
         pointer-events: auto;
       }
 
-      #roomModal {
+      #roomModal,
+      #aiModal {
         position: fixed;
         inset: 0;
         z-index: 3500;
@@ -144,7 +145,8 @@
         touch-action: pan-y;
       }
 
-      #roomModal[hidden] {
+      #roomModal[hidden],
+      #aiModal[hidden] {
         display: none;
       }
 
@@ -237,7 +239,9 @@
       }
 
       body.room-modal-open #zhHint,
-      body.room-modal-open #lobbyContainer {
+      body.room-modal-open #lobbyContainer,
+      body.ai-modal-open #zhHint,
+      body.ai-modal-open #lobbyContainer {
         visibility: hidden;
       }
 
@@ -357,6 +361,12 @@
         font-weight: 600;
       }
 
+      #lobbyAi {
+        margin-left: 6px;
+        color: #ffd479;
+        font-weight: 600;
+      }
+
       #roomLink,
       #roomWatchLink {
         font-size: 12px;
@@ -377,34 +387,6 @@
 
       #roomWatchRow {
         margin-top: 14px;
-      }
-
-      .room-ai-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: end;
-        gap: 10px;
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid rgb(255 255 255 / 10%);
-      }
-
-      .room-ai-row .room-field {
-        flex: 1 1 150px;
-        margin: 0;
-      }
-
-      .room-ai-row button {
-        flex: 0 1 130px;
-        min-height: 42px;
-        padding: 0 14px;
-        border: 0;
-        border-radius: 9px;
-        background: #2a2e38;
-        color: #fff;
-        font: 600 14px/1 "Microsoft YaHei", "PingFang SC", system-ui,
-          sans-serif;
-        cursor: pointer;
       }
 
       #zhRules {
@@ -589,6 +571,7 @@
       body.spectating #zhHint,
       body.spectating #zhRules,
       body.spectating #zhRuleOpen,
+      body.spectating #lobbyAi,
       body.spectating #strokeTip {
         display: none;
       }
@@ -616,7 +599,8 @@
           font-size: 12px;
         }
 
-        #lobbyOverlay {
+        #lobbyOverlay,
+        #lobbyAi {
           min-height: 40px;
           padding: 6px 10px;
         }
@@ -799,7 +783,6 @@
       <div class="zh-rule-actions">
         <button type="button" data-rule="eightball">八球</button>
         <button type="button" data-rule="nineball">九球</button>
-        <button type="button" id="zhRuleAi">人机对战</button>
         <button type="button" id="zhControlOpen">操作方式</button>
       </div>
     </div>
@@ -1408,15 +1391,23 @@
           </span>
           <span class="challenge-vs" aria-hidden="true">⚔</span>
         </div>
-        <a
-          href="#"
-          class="pill"
-          title="好友对战（创建/加入房间）"
-          id="lobbyOverlay"
-          aria-label="好友对战"
-          ><span class="lobby-count"></span
-        ></a>
-      </div>
+          <a
+            href="#"
+            class="pill"
+            title="好友对战（创建/加入房间）"
+            id="lobbyOverlay"
+            aria-label="好友对战"
+            ><span class="lobby-count"></span
+          ></a>
+          <a
+            href="#"
+            class="pill"
+            title="人机对战"
+            id="lobbyAi"
+            aria-label="人机对战"
+            >人机</a
+          >
+        </div>
     </main>
 
     <div id="controlModal" hidden>
@@ -1502,16 +1493,6 @@
             </label>
             <button id="roomJoin" type="button">进入房间</button>
           </div>
-          <div class="room-ai-row">
-            <label class="room-field"
-              >人机对手
-              <select id="roomAiName">
-                <option value="ClawBreak">ClawBreak · 稳健</option>
-                <option value="TheFarJaw">TheFarJaw · 进攻</option>
-              </select>
-            </label>
-            <button id="roomAi" type="button">人机对战</button>
-          </div>
           <p class="room-note">
             使用作者联机服务器，不挂梯子可直连。每个房间 2 名选手 + 最多 3
             名观战；创建后分别复制选手链接和观战链接。
@@ -1546,6 +1527,49 @@
             当前是本机地址，异地好友需部署到线上后再分享。
           </p>
         </div>
+      </div>
+    </div>
+
+    <div id="aiModal" hidden>
+      <div
+        class="room-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="aiTitle"
+      >
+        <button id="aiClose" class="room-close" type="button" aria-label="关闭">
+          ×
+        </button>
+        <h2 id="aiTitle">人机对战</h2>
+        <label class="room-field"
+          >玩法
+          <select id="aiRule">
+            <option value="eightball">八球 · 开球进球后定花色</option>
+            <option value="nineball">九球 · 按号码从 1 打到 9</option>
+          </select>
+        </label>
+        <label class="room-field"
+          >人机对手
+          <select id="aiName">
+            <option value="ClawBreak">ClawBreak · 稳健</option>
+            <option value="TheFarJaw">TheFarJaw · 进攻</option>
+          </select>
+        </label>
+        <label class="room-field"
+          >AI 难度
+          <select id="aiLevel">
+            <option value="easy">简单 · 偏差大</option>
+            <option value="normal" selected>普通 · 稳定</option>
+            <option value="hard">困难 · 精准</option>
+          </select>
+        </label>
+        <div class="room-actions">
+          <button id="aiStart" type="button">开始对战</button>
+        </div>
+        <p class="room-note">
+          本地 AI 对战，不会创建联机房间；开局后仍沿用当前操作方式。
+          难度只影响 AI 的瞄准和力度，不改变玩法规则。
+        </p>
       </div>
     </div>
     <script defer src="three_core.js"></script>
@@ -1595,7 +1619,10 @@
 
     <script>
       ;(() => {
-        const SERVER = "wss://billiards-network.onrender.com"
+        const SERVER =
+          location.protocol === "https:"
+            ? "wss://billiards-network.onrender.com"
+            : "http://62.234.154.21:8084"
         const params = new URLSearchParams(location.search)
         const modal = document.getElementById("roomModal")
         if (!modal) return
@@ -1614,7 +1641,6 @@
         const status = document.getElementById("roomStatus")
         const button = document.getElementById("lobbyOverlay")
         const ruleSelect = document.getElementById("roomRule")
-        const aiName = document.getElementById("roomAiName")
         const capacity = document.getElementById("roomCapacity")
         const capacityTitle = document.getElementById("roomCapacityTitle")
         const capacityText = document.getElementById("roomCapacityText")
@@ -1740,15 +1766,6 @@
           location.assign(`${location.origin}${location.pathname}?${p}`)
         }
 
-        const startBot = () => {
-          const p = new URLSearchParams()
-          p.set("userName", readName())
-          p.set("ruletype", selectedRule())
-          p.set("bot", aiName.value || "ClawBreak")
-          p.set("lod", "4")
-          location.assign(`${location.origin}${location.pathname}?${p}`)
-        }
-
         const showCapacity = (title, text) => {
           if (!capacity) return
           capacityTitle.textContent = title
@@ -1847,8 +1864,6 @@
         document.getElementById("roomCreate")?.addEventListener("click", () => {
           go(makeCode(), true, selectedRule())
         })
-
-        document.getElementById("roomAi")?.addEventListener("click", startBot)
 
         document
           .getElementById("roomJoinToggle")
@@ -1990,6 +2005,107 @@
         if (isHost) {
           setTimeout(openModal, 700)
         }
+      })()
+    </script>
+
+    <script>
+      // Human-vs-bot is a play mode, so it lives next to the online pill rather
+      // than inside the rules card.
+      ;(() => {
+        const params = new URLSearchParams(location.search)
+        const modal = document.getElementById("aiModal")
+        const trigger = document.getElementById("lobbyAi")
+        const close = document.getElementById("aiClose")
+        const start = document.getElementById("aiStart")
+        const ruleSelect = document.getElementById("aiRule")
+        const nameSelect = document.getElementById("aiName")
+        const levelSelect = document.getElementById("aiLevel")
+        if (
+          !modal ||
+          !trigger ||
+          !start ||
+          !ruleSelect ||
+          !nameSelect
+        )
+          return
+
+        if (params.has("room") || params.has("spectator")) {
+          trigger.hidden = true
+          return
+        }
+
+        let currentRule = params.get("ruletype") || "eightball"
+        if (!["eightball", "nineball"].includes(currentRule)) {
+          currentRule = "eightball"
+        }
+
+        const savedName = () => {
+          try {
+            return localStorage.getItem("billiards-room-name")
+          } catch {
+            return null
+          }
+        }
+
+        const savedLevel = () => {
+          try {
+            const value = localStorage.getItem("billiards-ai-level")
+            return ["easy", "normal", "hard"].includes(value)
+              ? value
+              : "normal"
+          } catch {
+            return "normal"
+          }
+        }
+
+        const open = () => {
+          ruleSelect.value = currentRule
+          if (levelSelect) levelSelect.value = savedLevel()
+          modal.hidden = false
+          document.body.classList.add("ai-modal-open")
+          start.focus({ preventScroll: true })
+        }
+
+        const dismiss = () => {
+          modal.hidden = true
+          document.body.classList.remove("ai-modal-open")
+        }
+
+        trigger.addEventListener("click", (event) => {
+          event.preventDefault()
+          open()
+        })
+        close?.addEventListener("click", dismiss)
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) dismiss()
+        })
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !modal.hidden) {
+            event.preventDefault()
+            event.stopPropagation()
+            dismiss()
+          }
+        })
+        start.addEventListener("click", () => {
+          const p = new URLSearchParams()
+          p.set(
+            "userName",
+            params.get("userName") || savedName() || "球友"
+          )
+          p.set("ruletype", ruleSelect.value)
+          p.set("bot", nameSelect.value || "ClawBreak")
+          const level =
+            levelSelect &&
+            ["easy", "normal", "hard"].includes(levelSelect.value)
+              ? levelSelect.value
+              : "normal"
+          p.set("botLevel", level)
+          try {
+            localStorage.setItem("billiards-ai-level", level)
+          } catch {}
+          p.set("lod", "4")
+          location.assign(`${location.origin}${location.pathname}?${p}`)
+        })
       })()
     </script>
 
@@ -2184,7 +2300,6 @@
         const title = document.getElementById("zhRuleTitle")
         const text = document.getElementById("zhRuleText")
         const close = document.getElementById("zhRuleClose")
-        const ai = document.getElementById("zhRuleAi")
         if (!card || !open || !title || !text) return
 
         const rules = {
@@ -2241,15 +2356,6 @@
             if (b.dataset.rule !== current) go(b.dataset.rule)
           })
         }
-        ai?.addEventListener("click", () => {
-          const p = new URLSearchParams()
-          p.set("userName", params.get("userName") || "球友")
-          p.set("ruletype", current)
-          p.set("bot", "ClawBreak")
-          p.set("lod", "4")
-          location.assign(`${location.origin}${location.pathname}?${p}`)
-        })
-
         render()
         if (params.has("room") || params.has("spectator")) {
           card.hidden = true

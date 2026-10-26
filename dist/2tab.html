@@ -17,9 +17,11 @@
       const urlParams = new URLSearchParams(window.location.search)
       const websocketserver =
         urlParams.get("websocketserver") ??
-        (window.location.hostname === "localhost"
-          ? "ws://localhost"
-          : "wss://billiards-network.onrender.com")
+        (window.location.protocol === "https:"
+          ? "wss://billiards-network.onrender.com"
+          : window.location.hostname === "localhost"
+            ? "ws://localhost"
+            : "http://62.234.154.21:8084")
       const ruletype = urlParams.get("ruletype") ?? "nineball"
       const shotClock = urlParams.get("shotClock")
       const practice = urlParams.get("practice")
